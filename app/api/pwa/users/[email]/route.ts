@@ -12,13 +12,16 @@ export async function GET(
 
   try {
     const res = await fetch(`${API_URL}/api/users/${encodeURIComponent(email)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
 
     const bodyText = await res.text();
     return new NextResponse(bodyText, {
       status: res.status,
-      headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
+      headers: {
+        "Content-Type": res.headers.get("Content-Type") || "application/json",
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+      },
     });
   } catch {
     return NextResponse.json({ error: "Failed to fetch user data" }, { status: 502 });

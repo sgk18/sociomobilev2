@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 async function fetchEvents(): Promise<FetchedEvent[]> {
   try {
     const res = await fetch(`${API_URL}/api/events`, {
-      next: { revalidate: 120 },
+      next: { revalidate: 300 },
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -77,7 +77,16 @@ export default async function RootLayout({
                     await Promise.all(keys.map((key) => caches.delete(key)));
                     return;
                   }
-                  navigator.serviceWorker.register('/sw.js');
+                  const registration = await navigator.serviceWorker.register('/sw.js');
+                  if (registration.waiting) {
+                    registration.waiting.postMessage('SKIP_WAITING');
+                  }
+
+                  navigator.serviceWorker.ready.then(() => {
+                    if (navigator.serviceWorker.controller) {
+                      navigator.serviceWorker.controller.postMessage('WARM_CACHE');
+                    }
+                  });
                 });
               }
             `,

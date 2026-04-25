@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
-import EventCard from "@/components/EventCard";
 import Skeleton from "@/components/Skeleton";
 import LoadingScreen from "@/components/LoadingScreen";
 import CampusSelector from "@/components/CampusSelector";
+import QRCodeDisplay from "@/components/QRCodeDisplay";
 import {
   LogOut,
   Mail,
@@ -21,11 +22,20 @@ import {
   Ticket,
   MapPin,
   Pencil,
+  QrCode,
+  Clock3,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import type { FetchedEvent } from "@/context/EventContext";
 
 interface Registration {
   event_id: string;
+  registration_id: string;
+  title?: string;
+  raw_date?: string;
+  department?: string;
+  status?: "upcoming" | "completed";
   event?: FetchedEvent;
 }
 
@@ -40,6 +50,37 @@ export default function ProfilePage() {
   const [nameInput, setNameInput] = useState("");
   const [isSubmittingName, setIsSubmittingName] = useState(false);
   const [nameEditError, setNameEditError] = useState<string | null>(null);
+  const [activeQR, setActiveQR] = useState<{ registrationId: string; eventTitle: string } | null>(null);
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const formatDate = (rawDate?: string) => {
+    if (!rawDate) return "Date TBA";
+    const d = new Date(rawDate);
+    if (Number.isNaN(d.getTime())) return "Date TBA";
+    return d.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const getStatus = (rawDate?: string): "upcoming" | "completed" => {
+    if (!rawDate) return "upcoming";
+    const eventDay = new Date(rawDate);
+    if (Number.isNaN(eventDay.getTime())) return "upcoming";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDay.setHours(0, 0, 0, 0);
+    return eventDay < today ? "completed" : "upcoming";
+  };
+
+  const isEventSoon = (rawDate?: string) => {
+    if (!rawDate) return false;
+    const eventStart = new Date(`${rawDate}T00:00:00`);
+    if (Number.isNaN(eventStart.getTime())) return false;
+    return eventStart.getTime() - Date.now() < 24 * 60 * 60 * 1000;
+  };
 
   useEffect(() => {
     if (!userData) {
@@ -64,8 +105,7 @@ export default function ProfilePage() {
         if (userData.email) params.set("email", userData.email);
 
         const res = await fetch(
-          `/api/pwa/registrations?${params.toString()}`,
-          { cache: "no-store" }
+          `/api/pwa/registrations?${params.toString()}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -73,9 +113,20 @@ export default function ProfilePage() {
           const normalized = (Array.isArray(regs) ? regs : [])
             .map((r: any) => ({
               event_id: String(r?.event_id || r?.id || r?.event?.event_id || r?.event?.id || ""),
+              registration_id: String(
+                r?.registration_id ||
+                r?.id ||
+                r?.event?.registration_id ||
+                r?.event?.id ||
+                ""
+              ),
+              title: r?.event?.title || r?.title || r?.name || "",
+              raw_date: r?.event?.event_date || r?.event_date || r?.date || "",
+              department: r?.event?.organizing_dept || r?.organizing_dept || r?.department || "",
+              status: getStatus(r?.event?.event_date || r?.event_date || r?.date || ""),
               event: r?.event,
             }))
-            .filter((r: Registration) => Boolean(r.event_id));
+            .filter((r: Registration) => Boolean(r.event_id) && Boolean(r.registration_id));
           setRegistrations(normalized);
         } else {
           console.error("Failed to fetch registrations:", res.status);
@@ -96,11 +147,49 @@ export default function ProfilePage() {
       if (!seen.has(r.event_id)) {
         // Enrich with event data from context
         const event = allEvents.find((e) => e.event_id === r.event_id);
-        seen.set(r.event_id, { ...r, event });
+        seen.set(r.event_id, {
+          ...r,
+          event,
+          title: r.title || event?.title || `Event ${r.event_id}`,
+          raw_date: r.raw_date || event?.event_date,
+          department: r.department || event?.organizing_dept || "Department TBA",
+          status: r.status || getStatus(r.raw_date || event?.event_date),
+        });
       }
     }
     return Array.from(seen.values());
   }, [registrations, allEvents]);
+
+  const handleCancelRegistration = async (registration: Registration) => {
+    if (!session?.access_token || cancellingId) return;
+
+    setCancellingId(registration.registration_id);
+    setCancelConfirmId(null);
+    try {
+      const res = await fetch(
+        `/api/pwa/registrations/self/${encodeURIComponent(registration.registration_id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          cache: "no-store",
+        }
+      );
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(body.error || "Failed to cancel registration.");
+        return;
+      }
+
+      setRegistrations((prev) => prev.filter((r) => r.registration_id !== registration.registration_id));
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !userData) router.replace("/auth");
@@ -253,7 +342,7 @@ export default function ProfilePage() {
       <div className="px-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <Ticket size={15} className="text-[var(--color-primary)]" />
-          <h2 className="text-[15px] font-extrabold">My Registrations</h2>
+          <h2 className="text-[15px] font-extrabold">Registered Events</h2>
           {uniqueRegistrations.length > 0 && (
             <span className="ml-auto text-[11px] font-bold text-[var(--color-text-muted)] bg-gray-100 px-2 py-0.5 rounded-full">
               {uniqueRegistrations.length}
@@ -276,21 +365,103 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="space-y-2 stagger">
-            {uniqueRegistrations.map((r) =>
-              r.event ? (
-                <EventCard key={r.event_id} event={r.event} compact />
-              ) : (
-                <div key={r.event_id} className="card p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-gray-100 flex items-center justify-center">
-                    <CalendarDays size={16} className="text-[var(--color-text-muted)]" />
+            {uniqueRegistrations.map((r) => {
+              const isUpcoming = r.status !== "completed";
+              const tooLateToCancel = isEventSoon(r.raw_date);
+              const eventTitle = r.title || `Event ${r.event_id}`;
+
+              return (
+                <div key={r.registration_id} className="card p-3">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center ${
+                        isUpcoming ? "bg-blue-100 text-[var(--color-primary)]" : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {isUpcoming ? <Clock3 size={16} /> : <CheckCircle2 size={16} />}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/event/${r.event_id}`} className="text-[13px] font-bold text-[var(--color-primary)] hover:underline block truncate">
+                        {eventTitle}
+                      </Link>
+                      <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                        {formatDate(r.raw_date)}
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-light)] truncate">
+                        {r.department || "Department TBA"}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isUpcoming ? "bg-blue-50 text-[var(--color-primary)]" : "bg-emerald-50 text-emerald-700"
+                      }`}
+                    >
+                      {isUpcoming ? "Upcoming" : "Completed"}
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-[13px] font-semibold">Event {r.event_id}</p>
-                    <p className="text-[11px] text-[var(--color-text-muted)]">Registered</p>
+
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveQR({ registrationId: r.registration_id, eventTitle })}
+                      className="btn btn-primary btn-sm flex-1"
+                    >
+                      <QrCode size={14} /> Generate QR
+                    </button>
+
+                    {isUpcoming && (
+                      <button
+                        type="button"
+                        onClick={() => setCancelConfirmId(r.registration_id)}
+                        disabled={tooLateToCancel || cancellingId === r.registration_id}
+                        className={`btn btn-sm flex-1 ${
+                          tooLateToCancel
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                            : "btn-danger"
+                        }`}
+                      >
+                        {cancellingId === r.registration_id ? (
+                          "Cancelling..."
+                        ) : tooLateToCancel ? (
+                          "Locked <24h"
+                        ) : (
+                          <>
+                            <XCircle size={14} /> Cancel
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
+
+                  {cancelConfirmId === r.registration_id && (
+                    <div className="mt-3 rounded-[var(--radius)] border border-red-200 bg-red-50 p-3">
+                      <p className="text-[12px] font-semibold text-red-700">
+                        Cancel this registration?
+                      </p>
+                      <p className="text-[11px] text-red-600 mt-1">
+                        This action cannot be undone.
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          className="btn btn-xs btn-ghost flex-1"
+                          onClick={() => setCancelConfirmId(null)}
+                        >
+                          Keep
+                        </button>
+                        <button
+                          className="btn btn-xs btn-danger flex-1"
+                          onClick={() => handleCancelRegistration(r)}
+                        >
+                          Confirm Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )
-            )}
+              );
+            })}
           </div>
         )}
       </div>
@@ -375,6 +546,15 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {activeQR && (
+        <QRCodeDisplay
+          registrationId={activeQR.registrationId}
+          eventTitle={activeQR.eventTitle}
+          participantName={userData.name || "Participant"}
+          onClose={() => setActiveQR(null)}
+        />
       )}
     </div>
   );

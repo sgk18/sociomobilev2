@@ -1,32 +1,48 @@
 /* ──────────────────────────────────────────────────────────
-   SOCIO PWA — Service Worker v3
+   SOCIO PWA — Service Worker v4
    • Cache-first for immutable Next.js bundles (/_next/static/)
    • Stale-while-revalidate for API data
-   • Network-first for navigations with offline fallback
+   • Cache-first for core navigations, network-first fallback for others
    • Cache-first for images / fonts / CSS
    ────────────────────────────────────────────────────────── */
 
-const CACHE_STATIC = "socio-static-v3";   // Next.js chunks, fonts, CSS
-const CACHE_PAGES = "socio-pages-v3";     // HTML navigations
-const CACHE_IMAGES = "socio-images-v3";   // images
-const CACHE_API = "socio-api-v3";         // API data (stale-while-revalidate)
+const CACHE_STATIC = "socio-static-v4";   // Next.js chunks, fonts, CSS
+const CACHE_PAGES = "socio-pages-v4";     // HTML navigations
+const CACHE_IMAGES = "socio-images-v4";   // images
+const CACHE_API = "socio-api-v4";         // API data (stale-while-revalidate)
 const OFFLINE_URL = "/offline";
 
 const ALL_CACHES = [CACHE_STATIC, CACHE_PAGES, CACHE_IMAGES, CACHE_API];
 
-const PRECACHE_URLS = [
+const CORE_ROUTES = [
   "/",
   "/offline",
+  "/auth",
   "/discover",
   "/events",
   "/fests",
-  "/manifest.json",
+  "/notifications",
+  "/privacy",
+  "/terms",
 ];
+
+const STATIC_SHELL_ASSETS = [
+  "/manifest.json",
+  "/applogo.png",
+  "/logo.svg",
+  "/favicon.svg",
+];
+
+const PRECACHE_URLS = [...new Set([...CORE_ROUTES, ...STATIC_SHELL_ASSETS])];
 
 /* ── Install — pre-cache shell ── */
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_PAGES).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE_PAGES).then((cache) =>
+      Promise.allSettled(
+        PRECACHE_URLS.map((url) => cache.add(new Request(url, { cache: "reload" })))
+      )
+    )
   );
   self.skipWaiting();
 });
@@ -48,6 +64,10 @@ self.addEventListener("activate", (event) => {
 /* ── Helpers ── */
 function isNavigation(request) {
   return request.mode === "navigate";
+}
+
+function isSameOrigin(url) {
+  return new URL(url).origin === self.location.origin;
 }
 
 function isNextStatic(url) {
@@ -73,6 +93,13 @@ function isAPIRoute(url) {
   return url.includes("/api/pwa/");
 }
 
+function isCoreRoutePath(pathname) {
+  if (CORE_ROUTES.includes(pathname)) return true;
+  if (pathname.startsWith("/event/")) return true;
+  if (pathname.startsWith("/fest/")) return true;
+  return false;
+}
+
 /* ── Fetch handler ── */
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -84,6 +111,7 @@ self.addEventListener("fetch", (event) => {
   if (request.url.includes("/auth/callback")) return;
 
   const url = request.url;
+  const parsed = new URL(url);
 
   /* 1. Next.js immutable static bundles — cache-first (they're fingerprinted) */
   if (isNextStatic(url)) {
@@ -136,13 +164,39 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  /* 4. Navigation — network-first, offline fallback */
+  /* 4. Navigation */
   if (isNavigation(request)) {
+    // For known app routes, prefer cached shell first and refresh in background.
+    if (isSameOrigin(url) && isCoreRoutePath(parsed.pathname)) {
+      event.respondWith(
+        caches.open(CACHE_PAGES).then((cache) =>
+          cache.match(request).then((cached) => {
+            const networkFetch = fetch(request)
+              .then((res) => {
+                if (res.ok) cache.put(request, res.clone());
+                return res;
+              })
+              .catch(() => cached || caches.match(OFFLINE_URL));
+
+            if (cached) {
+              event.waitUntil(networkFetch);
+              return cached;
+            }
+            return networkFetch;
+          })
+        )
+      );
+      return;
+    }
+
+    // For other navigations, keep network-first with cache/offline fallback.
     event.respondWith(
       fetch(request)
         .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_PAGES).then((c) => c.put(request, clone));
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_PAGES).then((c) => c.put(request, clone));
+          }
           return res;
         })
         .catch(() =>
@@ -189,6 +243,22 @@ self.addEventListener("fetch", (event) => {
       )
     );
     return;
+  }
+});
+
+/* ── Runtime controls ── */
+self.addEventListener("message", (event) => {
+  if (event?.data === "SKIP_WAITING") {
+    self.skipWaiting();
+    return;
+  }
+
+  if (event?.data === "WARM_CACHE") {
+    event.waitUntil(
+      caches.open(CACHE_PAGES).then((cache) =>
+        Promise.allSettled(PRECACHE_URLS.map((url) => cache.add(url)))
+      )
+    );
   }
 });
 

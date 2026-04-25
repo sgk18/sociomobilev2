@@ -53,9 +53,6 @@ export default function BottomNav() {
               >
                 {label}
               </span>
-              {active && (
-                <span className="absolute bottom-1 h-1 w-1 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
-              )}
             </Link>
           );
         })}

@@ -102,7 +102,7 @@ export default function RegisterPage() {
     if (registerNumber) params.set("registerNumber", String(registerNumber));
     if (userData.email) params.set("email", userData.email);
 
-    fetch(`/api/pwa/registrations?${params.toString()}`, { cache: "no-store" })
+    fetch(`/api/pwa/registrations?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
         const registrations = Array.isArray(data)

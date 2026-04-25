@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Bot, Sparkles, Trash2, X } from "lucide-react";
+import { MessageSquare, Sparkles, Trash2, X } from "lucide-react";
 
 /* ─── Types ─────────────────────────────────────────── */
 interface QA { q: string; a: string }
@@ -131,33 +131,36 @@ export default function ChatbotFab() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open help"
-          className="fixed right-3 z-40 w-12 h-12 rounded-full bg-[var(--color-primary)] text-white shadow-[var(--shadow-primary)] flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-          style={{ bottom: "calc(var(--bottom-nav) + var(--safe-bottom) + 10px)" }}
+          className="fixed right-4 z-40 w-12 h-12 rounded-full border-2 border-white bg-[var(--color-primary)] text-white shadow-[0_10px_24px_rgba(21,76,179,0.35)] flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+          style={{ bottom: "calc(var(--bottom-nav) + var(--safe-bottom) + 22px)" }}
         >
-          <Bot size={19} strokeWidth={2.2} />
+          <MessageSquare size={19} strokeWidth={2.1} />
         </button>
       )}
 
       {/* Chat Panel */}
       {open && (
+        <>
+        <button
+          type="button"
+          aria-label="Close chat"
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
+          onClick={() => setOpen(false)}
+        />
         <div
-          className="fixed z-50 flex flex-col bg-[var(--color-bg)]"
+          className="fixed z-50 flex flex-col rounded-[18px] border border-[var(--color-border)] bg-[var(--color-bg)] shadow-[0_18px_50px_rgba(17,24,39,0.22)] overflow-hidden"
           style={{
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            maxWidth: "100vw",
-            maxHeight: "100dvh",
-            paddingTop: "var(--safe-top, 0px)",
-            paddingBottom: "calc(var(--bottom-nav, 0px) + var(--safe-bottom, 0px))",
+            left: "12px",
+            width: "min(86vw, 350px)",
+            bottom: "calc(var(--bottom-nav, 0px) + var(--safe-bottom, 0px) + 22px)",
+            maxHeight: "min(68dvh, 560px)",
           }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[var(--color-primary-dark)] to-[var(--color-primary)] text-white shrink-0 border-b border-white/15">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-[var(--radius)] bg-white/15 border border-white/25 flex items-center justify-center">
-                <Bot size={18} strokeWidth={2.2} />
+              <div className="w-9 h-9 rounded-full bg-white/15 border border-white/25 flex items-center justify-center">
+                <MessageSquare size={17} strokeWidth={2.1} />
               </div>
               <div>
                 <h2 className="text-[15px] font-bold leading-tight">SocioAssist</h2>
@@ -181,7 +184,7 @@ export default function ChatbotFab() {
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center px-4 gap-3">
                 <div className="w-14 h-14 rounded-[var(--radius-lg)] bg-[var(--color-primary-light)] flex items-center justify-center border border-[var(--color-border)]">
-                  <Bot size={24} className="text-[var(--color-primary)]" />
+                  <MessageSquare size={22} className="text-[var(--color-primary)]" />
                 </div>
                 <div>
                   <p className="font-bold text-[15px] text-[var(--color-text)]">How can we help?</p>
@@ -244,6 +247,7 @@ export default function ChatbotFab() {
 
 
         </div>
+        </>
       )}
     </>
   );

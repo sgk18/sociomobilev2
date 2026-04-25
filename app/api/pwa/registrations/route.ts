@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (registerNumber) {
       const byRegRes = await fetch(
         `${API_URL}/api/registrations/user/${encodeURIComponent(registerNumber)}/events`,
-        { headers, cache: "no-store" }
+        { headers, next: { revalidate: 30 } }
       );
 
       if (byRegRes.ok) {
@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
             event,
           }))
           .filter((registration: any) => Boolean(registration.event_id));
-        return NextResponse.json(normalized, { status: 200 });
+        return NextResponse.json(normalized, {
+          status: 200,
+          headers: {
+            "Cache-Control": "private, max-age=30, stale-while-revalidate=120",
+          },
+        });
       }
 
       console.error("[registrations] registerNumber lookup failed:", byRegRes.status, byRegRes.statusText);
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (email) {
       const byEmailRes = await fetch(
         `${API_URL}/api/registrations?email=${encodeURIComponent(email)}`,
-        { headers, cache: "no-store" }
+        { headers, next: { revalidate: 30 } }
       );
 
       if (!byEmailRes.ok) {
@@ -48,7 +53,12 @@ export async function GET(request: NextRequest) {
 
       const byEmailData = await byEmailRes.json();
       const registrations = byEmailData.registrations ?? byEmailData ?? [];
-      return NextResponse.json(Array.isArray(registrations) ? registrations : [], { status: 200 });
+      return NextResponse.json(Array.isArray(registrations) ? registrations : [], {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=120",
+        },
+      });
     }
 
     return NextResponse.json([], { status: 200 });
