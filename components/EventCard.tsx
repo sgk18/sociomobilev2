@@ -25,8 +25,8 @@ export default function EventCard({ event, compact }: { event: FetchedEvent; com
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[13px] font-bold leading-tight line-clamp-1">{event.title}</h4>
-          <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1">
+          <h4 className="text-[13px] font-extrabold leading-tight line-clamp-1">{event.title}</h4>
+          <p className="text-[11px] font-medium text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1">
             <Clock size={10} /> {formatDateShort(event.event_date)}
             {event.event_time && ` · ${formatTime(event.event_time)}`}
           </p>
@@ -101,9 +101,12 @@ export default function EventCard({ event, compact }: { event: FetchedEvent; com
 
       {/* Body */}
       <div className="p-3">
-        <h3 className="text-[14px] font-bold leading-snug line-clamp-1">{event.title}</h3>
+        <h3 className="text-[15px] font-extrabold leading-snug line-clamp-1">{event.title}</h3>
+        <p className="mt-0.5 text-[12px] font-medium text-[var(--color-text-muted)] line-clamp-1">
+          {event.organizing_dept || event.fest || event.category || "Campus Event"}
+        </p>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-[var(--color-text-muted)]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-[var(--color-text-light)]">
           <span className="flex items-center gap-1">
             <Clock size={11} className="text-[var(--color-primary)]" />
             {formatDateShort(event.event_date)}

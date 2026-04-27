@@ -168,6 +168,35 @@ html, body {
   overflow: hidden; box-shadow: var(--shadow);
 }
 
+/* ── Shared polish utilities ── */
+.shadow-soft { box-shadow: var(--shadow); }
+.shadow-hero { box-shadow: var(--shadow-lg), var(--shadow-primary); }
+
+.premium-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: transform .16s ease, box-shadow .2s ease;
+}
+.premium-card:hover { box-shadow: var(--shadow); }
+.premium-card:active { transform: scale(0.985); }
+
+.btn-active-state {
+  transition: transform .14s ease, filter .14s ease, box-shadow .2s ease;
+}
+.btn-active-state:active {
+  transform: scale(0.97);
+  filter: brightness(0.98);
+}
+
+.fab-glow {
+  box-shadow: 0 10px 24px rgba(21,76,179,0.35);
+  transition: transform .18s ease, box-shadow .2s ease;
+}
+.fab-glow:hover { box-shadow: 0 14px 30px rgba(21,76,179,0.45); }
+.fab-glow:active { transform: scale(0.95); }
+
 /* ── Input ── */
 .input {
   width: 100%; padding: 12px 16px; border-radius: var(--radius);

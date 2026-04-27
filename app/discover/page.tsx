@@ -2,21 +2,24 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useEvents } from "@/context/EventContext";
 import EventCard from "@/components/EventCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { Search, X, Filter, ArrowRight } from "lucide-react";
-import { isDeadlinePassed } from "@/lib/dateUtils";
-import Image from "next/image";
+import { Search, X, Filter, ArrowRight, CalendarDays, MapPin, Sparkles } from "lucide-react";
+import { formatDateShort, isDeadlinePassed } from "@/lib/dateUtils";
 import type { Fest } from "@/context/EventContext";
 
 const ITEMS_PER_PAGE = 10;
+const QUICK_CATEGORY_LIMIT = 6;
+const GRID_CATEGORY_LIMIT = 4;
 
 export default function DiscoverPage() {
   const { allEvents, isLoading } = useEvents();
   const [search, setSearch] = useState("");
   const [showOpen, setShowOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [fests, setFests] = useState<Fest[]>([]);
   const [festsLoading, setFestsLoading] = useState(true);
@@ -36,6 +39,23 @@ export default function DiscoverPage() {
     })();
   }, []);
 
+  const categories = useMemo(() => {
+    const values = new Set<string>(["All"]);
+    if (allEvents.some((event) => !event.registration_fee || event.registration_fee === 0)) {
+      values.add("Free");
+    }
+    allEvents.forEach((event) => {
+      const category = event.category?.trim();
+      if (category) values.add(category);
+    });
+    return Array.from(values).slice(0, QUICK_CATEGORY_LIMIT);
+  }, [allEvents]);
+
+  const categoryGrid = useMemo(
+    () => categories.filter((category) => category !== "All").slice(0, GRID_CATEGORY_LIMIT),
+    [categories]
+  );
+
   /* Filter events based on search and open status */
   const filtered = useMemo(() => {
     let list = allEvents;
@@ -49,28 +69,47 @@ export default function DiscoverPage() {
           e.category?.toLowerCase().includes(q)
       );
     }
+    if (activeCategory !== "All") {
+      if (activeCategory === "Free") {
+        list = list.filter((e) => !e.registration_fee || e.registration_fee === 0);
+      } else {
+        list = list.filter((e) => (e.category || "").toLowerCase() === activeCategory.toLowerCase());
+      }
+    }
     if (showOpen) {
       list = list.filter((e) => !isDeadlinePassed(e.registration_deadline));
     }
     return list.sort(
       (a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
     );
-  }, [allEvents, search, showOpen]);
+  }, [allEvents, search, activeCategory, showOpen]);
 
   const allFiltered = filtered;
+  const spotlightEvent =
+    allFiltered.find((e) => !isDeadlinePassed(e.registration_deadline)) ||
+    allFiltered[0] ||
+    null;
   const totalPages = Math.ceil(allFiltered.length / ITEMS_PER_PAGE);
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const displayedEvents = allFiltered.slice(0, startIdx + ITEMS_PER_PAGE);
-  const hasMore = currentPage < totalPages;
 
   /* Auto-scroll for Featured Fests */
   const scrollRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleUserInteraction = useCallback(() => {
     pausedRef.current = true;
-    const timer = setTimeout(() => { pausedRef.current = false; }, 4000);
-    return () => clearTimeout(timer);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      pausedRef.current = false;
+    }, 4000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -113,8 +152,7 @@ export default function DiscoverPage() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full h-[44px] text-[14px] bg-white border-[1.5px] border-[var(--color-border)] rounded-[var(--radius)] outline-none focus:border-[var(--color-primary)] focus:shadow-[0_0_0_3px_rgba(21,76,179,0.1)] transition-all placeholder:text-[var(--color-text-muted)]"
-            style={{ paddingLeft: 42, paddingRight: 40 }}
+            className="w-full h-[44px] pl-[42px] pr-10 text-[14px] bg-white border-[1.5px] border-[var(--color-border)] rounded-[var(--radius)] outline-none focus:border-[var(--color-primary)] focus:shadow-[0_0_0_3px_rgba(21,76,179,0.1)] transition-all placeholder:text-[var(--color-text-muted)]"
           />
           {search && (
             <button
@@ -134,9 +172,9 @@ export default function DiscoverPage() {
             setShowOpen(!showOpen);
             setCurrentPage(1);
           }}
-          className={`shrink-0 flex items-center justify-center gap-1.5 h-[44px] px-4 border text-[12px] font-bold rounded-[var(--radius)] transition-all ${
+          className={`shrink-0 btn-active-state flex items-center justify-center gap-1.5 h-[44px] px-4 border text-[12px] font-bold rounded-[var(--radius)] ${
             showOpen
-              ? "bg-[#dcfce7] text-[#166534] border-[#86efac]"
+              ? "bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[var(--color-primary)]"
               : "bg-white text-[var(--color-text-muted)] border-[var(--color-border)]"
           }`}
         >
@@ -145,17 +183,110 @@ export default function DiscoverPage() {
         </button>
       </div>
 
+      {/* Quick category chips */}
+      {categories.length > 1 && (
+        <div className="h-scroll mb-4 gap-2">
+          <div className="shrink-0 w-5" aria-hidden />
+          {categories.map((category) => {
+            const active = category === activeCategory;
+            return (
+              <button
+                key={category}
+                onClick={() => {
+                  setActiveCategory(category);
+                  setCurrentPage(1);
+                }}
+                className={`chip btn-active-state px-3 py-1.5 text-[12px] font-semibold border ${
+                  active
+                    ? "chip-active border-[var(--color-primary)]"
+                    : "bg-white text-[var(--color-text-muted)] border-[var(--color-border)]"
+                }`}
+              >
+                {category}
+              </button>
+            );
+          })}
+          <div className="shrink-0 w-5" aria-hidden />
+        </div>
+      )}
+
       {isLoading ? (
         <div className="px-5 space-y-4">
-          <Skeleton className="h-32 w-full rounded-[var(--radius-lg)]" count={2} />
+          <Skeleton className="h-52 w-full rounded-[var(--radius-xl)]" count={1} />
+          <Skeleton className="h-36 w-full rounded-[var(--radius-lg)]" count={2} />
         </div>
       ) : (
         <>
-          {/* Fests Section - Horizontal Scroll */}
-          {fests.length > 0 && (
+          {/* Spotlight Hero */}
+          {spotlightEvent && (
+            <div className="px-5 pb-6">
+              <div className="pb-3 flex items-center justify-between">
+                <h2 className="text-[15px] font-extrabold tracking-[-0.01em]">Spotlight</h2>
+                <Link href="/events" className="text-[12px] font-bold text-[var(--color-primary)] flex items-center gap-1 hover:gap-1.5 transition-all">
+                  See All <ArrowRight size={13} />
+                </Link>
+              </div>
+
+              <Link
+                href={`/event/${spotlightEvent.event_id}`}
+                className="premium-card group relative block overflow-hidden rounded-[var(--radius-xl)] border-0 shadow-hero"
+              >
+                <div className="relative aspect-[4/5] bg-[var(--color-primary-light)] overflow-hidden">
+                  {spotlightEvent.banner_url || spotlightEvent.event_image_url ? (
+                    <Image
+                      src={spotlightEvent.banner_url || spotlightEvent.event_image_url || ""}
+                      alt={spotlightEvent.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width:480px) 100vw, 420px"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary-dark)] to-[var(--color-primary)] flex items-center justify-center">
+                      <span className="text-white font-black text-6xl opacity-30">{spotlightEvent.title.charAt(0)}</span>
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgba(6,49,104,0.98)] via-[rgba(6,49,104,0.65)] to-[rgba(6,49,104,0.08)]" />
+                  <div className="absolute inset-[1px] rounded-[18px] border border-white/20 bg-gradient-to-b from-white/15 via-transparent to-transparent pointer-events-none" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                    <span className="chip bg-[var(--color-accent)] text-[var(--color-primary-dark)] text-[10px] font-extrabold uppercase tracking-[0.08em]">
+                      Featured Event
+                    </span>
+                    <h3 className="mt-2 text-[34px] font-extrabold leading-[1.06] tracking-[-0.02em] text-white">
+                      {spotlightEvent.title}
+                    </h3>
+                    <p className="mt-2 text-[12px] font-medium text-white/85 line-clamp-1">
+                      {spotlightEvent.organizing_dept || spotlightEvent.fest || "Campus Highlight"}
+                    </p>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-white/82">
+                      <span className="flex items-center gap-1">
+                        <CalendarDays size={13} />
+                        {formatDateShort(spotlightEvent.event_date)}
+                      </span>
+                      {spotlightEvent.venue && (
+                        <span className="flex items-center gap-1">
+                          <MapPin size={13} />
+                          {spotlightEvent.venue}
+                        </span>
+                      )}
+                    </p>
+
+                    <span className="btn btn-primary btn-active-state mt-4 !w-full !min-h-[44px] !rounded-[var(--radius)] !px-4 !py-2 !text-[14px] !font-extrabold">
+                      View Event
+                      <ArrowRight size={16} />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          )}
+
+          {/* Trending Fests - Horizontal Scroll */}
+          {(festsLoading || fests.length > 0) && (
             <div className="pb-6">
               <div className="px-5 pb-3 flex items-center justify-between">
-                <h2 className="text-[15px] font-extrabold">Featured Fests</h2>
+                <h2 className="text-[15px] font-extrabold tracking-[-0.01em]">Trending Now</h2>
                 <Link href="/fests" className="text-[12px] font-bold text-[var(--color-primary)] flex items-center gap-1 hover:gap-2 transition-all">
                   View More <ArrowRight size={13} />
                 </Link>
@@ -165,47 +296,116 @@ export default function DiscoverPage() {
                 onTouchStart={handleUserInteraction}
                 onMouseDown={handleUserInteraction}
                 className="flex overflow-x-auto gap-3 snap-x snap-mandatory scroll-smooth pb-1 no-scrollbar"
-                style={{ scrollbarWidth: "none" }}
               >
                 {/* left spacer */}
                 <div className="shrink-0 w-5" aria-hidden />
-                {fests.slice(0, 6).map((f) => {
-                  const img = f.fest_image_url || f.banner_url || f.image_url;
-                  const title = f.fest_title || f.name || "Fest";
-                  return (
-                    <Link
-                      key={f.fest_id || f.id}
-                      href={`/fest/${f.slug || f.fest_id}`}
-                      data-fest-card
-                      className="flex-shrink-0 snap-center rounded-[var(--radius)] bg-white shadow-[var(--shadow-card)] overflow-hidden hover:shadow-lg transition-shadow active:scale-[0.98]"
-                      style={{ width: "calc(100vw - 56px)" }}
-                    >
-                      <div className="relative aspect-[16/9] bg-gray-100 overflow-hidden">
-                        {img ? (
-                          <Image
-                            src={img}
-                            alt={title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width:480px) 90vw, 400px"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[#1a6bdb] flex items-center justify-center">
-                            <span className="text-white font-extrabold text-lg">{title.charAt(0)}</span>
+                {festsLoading
+                  ? Array.from({ length: 2 }).map((_, idx) => (
+                      <div
+                        key={`fest-skeleton-${idx}`}
+                        className="premium-card w-[min(280px,calc(100vw-86px))] shrink-0 snap-start overflow-hidden"
+                      >
+                        <div className="skeleton aspect-[16/10]" />
+                        <div className="p-3.5 space-y-2">
+                          <div className="skeleton h-4 w-3/4" />
+                          <div className="skeleton h-3 w-2/3" />
+                          <div className="skeleton h-9 w-28 rounded-[var(--radius)]" />
+                        </div>
+                      </div>
+                    ))
+                  : fests.slice(0, 6).map((f) => {
+                      const img = f.fest_image_url || f.banner_url || f.image_url;
+                      const title = f.fest_title || f.name || "Fest";
+                      return (
+                        <Link
+                          key={f.fest_id || f.id}
+                          href={`/fest/${f.slug || f.fest_id}`}
+                          data-fest-card
+                          className="premium-card btn-active-state group w-[min(280px,calc(100vw-86px))] flex-shrink-0 snap-start overflow-hidden"
+                        >
+                          <div className="relative aspect-[16/10] bg-[var(--color-primary-light)] overflow-hidden">
+                            {img ? (
+                              <Image
+                                src={img}
+                                alt={title}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                sizes="(max-width:480px) 70vw, 280px"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary-dark)] to-[var(--color-primary)] flex items-center justify-center">
+                                <span className="text-white font-extrabold text-2xl opacity-35">{title.charAt(0)}</span>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/68 via-black/10 to-transparent" />
+                            <span className="absolute top-2.5 right-2.5 chip bg-white/92 text-[var(--color-primary)] text-[10px] font-bold">
+                              Fest
+                            </span>
                           </div>
-                        )}
-                      </div>
-                      <div className="p-3">
-                        <p className="text-[13px] font-bold line-clamp-1">{title}</p>
-                        <p className="text-[11px] text-[var(--color-text-muted)] mt-1">
-                          {f.organizing_dept || f.department || ""}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
+
+                          <div className="p-3.5">
+                            <p className="text-[14px] font-extrabold leading-tight line-clamp-1">{title}</p>
+                            <p className="text-[11px] font-medium text-[var(--color-text-muted)] mt-1 line-clamp-1">
+                              {f.organizing_dept || f.department || "Campus Fest"}
+                            </p>
+                            <span className="btn-active-state mt-3 inline-flex items-center gap-1 rounded-[var(--radius)] bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)] px-3 py-2 text-[12px] font-bold text-white shadow-[var(--shadow-primary)]">
+                              Explore
+                              <ArrowRight size={13} />
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
                 {/* right spacer */}
                 <div className="shrink-0 w-5" aria-hidden />
+              </div>
+            </div>
+          )}
+
+          {/* Categories */}
+          {categoryGrid.length > 0 && (
+            <div className="pb-6">
+              <div className="px-5 pb-3">
+                <h2 className="text-[15px] font-extrabold tracking-[-0.01em]">Explore Categories</h2>
+              </div>
+
+              <div className="px-5 grid grid-cols-2 gap-2.5">
+                {categoryGrid.map((category) => {
+                  const active = activeCategory === category;
+                  return (
+                    <button
+                      key={`grid-${category}`}
+                      onClick={() => {
+                        setActiveCategory(category);
+                        setCurrentPage(1);
+                      }}
+                      className={`premium-card btn-active-state flex items-center gap-3 px-3 py-3 text-left ${
+                        active
+                          ? "bg-[var(--color-primary-light)] border-[var(--color-primary)]"
+                          : "bg-[var(--color-surface)]"
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${
+                          active
+                            ? "bg-[var(--color-primary)] text-white"
+                            : "bg-[var(--color-primary-light)] text-[var(--color-primary)]"
+                        }`}
+                      >
+                        <Sparkles size={16} />
+                      </span>
+                      <span
+                        className={`text-[13px] leading-snug ${
+                          active
+                            ? "font-bold text-[var(--color-primary)]"
+                            : "font-semibold text-[var(--color-text)]"
+                        }`}
+                      >
+                        {category}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -214,7 +414,7 @@ export default function DiscoverPage() {
           {allFiltered.length > 0 && (
             <div>
               <div className="px-5 pb-3 flex items-center justify-between">
-                <h2 className="text-[15px] font-extrabold">All Events</h2>
+                <h2 className="text-[15px] font-extrabold tracking-[-0.01em]">All Upcoming</h2>
                 <Link href="/events" className="text-[12px] font-bold text-[var(--color-primary)] flex items-center gap-1 hover:gap-2 transition-all">
                   View More <ArrowRight size={13} />
                 </Link>
@@ -259,14 +459,14 @@ export default function DiscoverPage() {
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 text-[12px] font-bold text-[var(--color-primary)] border border-[var(--color-primary)] rounded-[var(--radius-lg)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 active:scale-95 transition-all"
+                      className="btn btn-ghost btn-sm btn-active-state !rounded-[var(--radius-lg)] !px-4 !py-2 !text-[12px] !font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 text-[12px] font-bold text-white bg-[var(--color-primary)] rounded-[var(--radius-lg)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--color-primary-dark)] active:scale-95 transition-all"
+                      className="btn btn-primary btn-sm btn-active-state !rounded-[var(--radius-lg)] !px-4 !py-2 !text-[12px] !font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       Next
                     </button>

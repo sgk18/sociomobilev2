@@ -131,7 +131,7 @@ export default function ChatbotFab() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open help"
-          className="fixed right-4 z-40 w-12 h-12 rounded-full border-2 border-white bg-[var(--color-primary)] text-white shadow-[0_10px_24px_rgba(21,76,179,0.35)] flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+          className="fixed right-4 z-40 h-12 w-12 rounded-full border-2 border-white bg-[var(--color-primary)] text-white fab-glow btn-active-state flex items-center justify-center hover:scale-105 transition-transform"
           style={{ bottom: "calc(var(--bottom-nav) + var(--safe-bottom) + 22px)" }}
         >
           <MessageSquare size={19} strokeWidth={2.1} />
