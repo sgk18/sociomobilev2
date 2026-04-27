@@ -55,21 +55,21 @@ export default function FestCard({ fest }: { fest: Fest }) {
       href={href}
       className="relative block w-full h-[220px] rounded-[1.25rem] overflow-hidden group shadow-[0_8px_24px_rgba(21,76,179,0.12)] cursor-pointer transition-all duration-300 active:scale-[0.97] border border-white/40 bg-white"
     >
-      {img ? (
-        <Image
-          src={img}
-          alt={title}
-          fill
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-          sizes="(max-width:480px) 100vw, 50vw"
-        />
-      ) : (
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#00368b] to-[#154cb3] flex items-center justify-center">
-          <span className="text-white text-6xl font-black opacity-20">
-            {title.charAt(0)}
-          </span>
-        </div>
-      )}
+      <Image
+        src={
+          img ||
+          [
+            "https://images.unsplash.com/photo-1540509210214-411fb26dcf5a?q=80&w=1000&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=1000&auto=format&fit=crop"
+          ][(title.charCodeAt(0) || 0) % 4]
+        }
+        alt={title}
+        fill
+        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+        sizes="(max-width:480px) 100vw, 50vw"
+      />
       <div className="absolute inset-0 bg-gradient-to-t from-[#171a2e] via-[#171a2e]/40 to-transparent"></div>
       <div className="absolute inset-0 p-5 flex flex-col justify-between">
         <div className="flex justify-between items-start">

@@ -9,6 +9,7 @@ import EmptyState from "@/components/EmptyState";
 import { Search, X, Sparkles, Heart, Calendar, Flame, ArrowRight } from "lucide-react";
 import type { Fest } from "@/context/EventContext";
 import { useDebounce } from "@/lib/useDebounce";
+import { formatDateRange } from "@/lib/dateUtils";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -183,17 +184,17 @@ export default function FestsPage() {
                 href={`/fest/${featuredFest.slug || featuredFest.fest_id}`}
                 className="relative block w-full h-[400px] rounded-[1.25rem] overflow-hidden group shadow-[0_8px_30px_rgba(21,76,179,0.15)] cursor-pointer transition-transform duration-300 active:scale-[0.97] border border-white/40"
               >
-                {(featuredFest.fest_image_url || featuredFest.banner_url || featuredFest.image_url) ? (
-                  <Image
-                    src={featuredFest.fest_image_url || featuredFest.banner_url || featuredFest.image_url || ""}
-                    alt={featuredFest.fest_title || featuredFest.name || "Featured Fest"}
-                    fill
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    priority
-                  />
-                ) : (
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#001848] to-[#154cb3]" />
-                )}
+                <Image
+                  src={
+                    (featuredFest.fest_image_url || featuredFest.banner_url || featuredFest.image_url)
+                      ? (featuredFest.fest_image_url || featuredFest.banner_url || featuredFest.image_url)!
+                      : "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
+                  }
+                  alt={featuredFest.fest_title || featuredFest.name || "Featured Fest"}
+                  fill
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  priority
+                />
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-[#001848]/95 via-[#001848]/60 to-transparent"></div>
                 <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
@@ -222,9 +223,7 @@ export default function FestsPage() {
                     <div className="flex items-center gap-2 text-[#e2e2e2] mb-6 text-sm font-medium">
                       <Calendar size={18} />
                       <span>
-                        {featuredFest.opening_date || featuredFest.start_date
-                          ? new Date(featuredFest.opening_date || featuredFest.start_date!).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                          : "Dates TBA"}
+                        {formatDateRange(featuredFest.opening_date || featuredFest.start_date, featuredFest.closing_date || featuredFest.end_date)}
                       </span>
                       <span className="bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded text-xs ml-2 flex items-center gap-1 font-bold">
                         <Flame size={14} /> Trending
