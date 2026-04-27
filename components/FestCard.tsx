@@ -51,60 +51,60 @@ export default function FestCard({ fest }: { fest: Fest }) {
   const attendeeLabel = formatCompactCount(attendeeCount);
 
   return (
-    <Link href={href} className="card block animate-fade-up group">
-      {/* Image */}
-      <div className="relative aspect-[2.2/1] bg-gray-100 overflow-hidden">
-        {img ? (
-          <Image
-            src={img}
-            alt={title}
-            fill
-            className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
-            sizes="(max-width:480px) 100vw, 50vw"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary-dark)] to-[var(--color-primary)] flex items-center justify-center">
-            <span className="text-white text-4xl font-black opacity-30">
-              {title.charAt(0)}
+    <Link
+      href={href}
+      className="relative block w-full h-[220px] rounded-[1.25rem] overflow-hidden group shadow-[0_8px_24px_rgba(21,76,179,0.12)] cursor-pointer transition-all duration-300 active:scale-[0.97] border border-white/40 bg-white"
+    >
+      {img ? (
+        <Image
+          src={img}
+          alt={title}
+          fill
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          sizes="(max-width:480px) 100vw, 50vw"
+        />
+      ) : (
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#00368b] to-[#154cb3] flex items-center justify-center">
+          <span className="text-white text-6xl font-black opacity-20">
+            {title.charAt(0)}
+          </span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#171a2e] via-[#171a2e]/40 to-transparent"></div>
+      <div className="absolute inset-0 p-5 flex flex-col justify-between">
+        <div className="flex justify-between items-start">
+          {fest.category ? (
+            <span className="bg-[#154cb3] text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
+              {fest.category}
             </span>
-          </div>
-        )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        {attendeeCount > 0 && (
-          <div className="absolute top-3 right-3 z-[1]">
-            <span className="bg-black/50 backdrop-blur-md text-white/90 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap transition-all duration-200">
-              <Users size={14} />
-              {attendeeLabel} going
+          ) : (
+            <div />
+          )}
+          {attendeeCount > 0 && (
+            <span className="bg-black/80 backdrop-blur-sm text-white/90 px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase">
+              {attendeeLabel} attending
             </span>
-          </div>
-        )}
-        {/* Title on image */}
-        <div className="absolute bottom-0 left-0 right-0 p-3.5">
-          <h3 className="text-white text-[16px] font-extrabold leading-tight line-clamp-2 drop-shadow-lg">
+          )}
+        </div>
+        <div>
+          {dept && (
+            <p className="text-[#dae2ff] font-semibold text-xs uppercase tracking-wider mb-1">
+              {dept}
+            </p>
+          )}
+          <h3 className="text-2xl font-bold text-white leading-tight mb-1 drop-shadow-md">
             {title}
           </h3>
-          {dept && (
-            <p className="text-white/70 text-[11px] font-semibold mt-0.5">{dept}</p>
-          )}
+          <div className="flex items-center gap-2 text-[#e2e2e2] text-xs font-medium">
+            <Calendar size={16} className="opacity-80" />
+            <span>
+              {formatDateRange(
+                fest.opening_date || fest.start_date,
+                fest.closing_date || fest.end_date
+              )}
+            </span>
+          </div>
         </div>
-      </div>
-
-      {/* Body */}
-      <div className="p-3 flex items-center gap-3">
-        <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)]">
-          <Calendar size={12} className="text-[var(--color-primary)]" />
-          {formatDateRange(
-            fest.opening_date || fest.start_date,
-            fest.closing_date || fest.end_date
-          )}
-        </div>
-        {fest.category && (
-          <span className="chip bg-[var(--color-primary-light)] text-[var(--color-primary)] text-[10px] font-bold">
-            {fest.category}
-          </span>
-        )}
-        <ArrowRight size={14} className="ml-auto text-[var(--color-text-light)] group-hover:text-[var(--color-primary)] transition-colors" />
       </div>
     </Link>
   );
