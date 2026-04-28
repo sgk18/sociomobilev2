@@ -6,7 +6,7 @@ import Image from "next/image";
 import FestCard from "@/components/FestCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { SearchIcon, XIcon, SparklesIcon, HeartIcon, CalendarIcon, FlameIcon, ArrowRightIcon } from "@/components/icons";
+import { SearchIcon, XIcon, SparklesIcon, HeartIcon, CalendarIcon, FlameIcon, ArrowRightIcon, TrendingUpIcon } from "@/components/icons";
 import { Button } from "@/components/Button";
 import { FilterChip } from "@/components/FilterChip";
 import { SectionContainer } from "@/components/SectionContainer";
@@ -107,6 +107,16 @@ export default function FestsPage() {
   const displayedFests = filtered.slice(0, startIdx + ITEMS_PER_PAGE);
   const hasMore = currentPage < totalPages;
 
+  // Dynamically calculate the trending threshold based on the top 25% of fests
+  const trendingThreshold = useMemo(() => {
+    if (!fests || fests.length === 0) return Infinity;
+    const counts = fests.map((f) => f.registrations ?? f.total_participants ?? f.attendees ?? 0).filter((c) => c > 0);
+    if (counts.length === 0) return Infinity;
+    counts.sort((a, b) => b - a);
+    const index = Math.min(Math.max(1, Math.floor(counts.length * 0.25)), counts.length - 1);
+    return Math.max(5, counts[index]);
+  }, [fests]);
+
   const featuredFest = displayedFests.length > 0 ? displayedFests[0] : null;
   const upcomingFests = displayedFests.slice(1);
 
@@ -200,9 +210,17 @@ export default function FestsPage() {
                 />
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                
+                {(featuredFest.registrations ?? featuredFest.total_participants ?? featuredFest.attendees ?? 0) >= trendingThreshold && (
+                  <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 flex items-center gap-1 z-20 shadow-sm border border-white/10">
+                    <TrendingUpIcon className="w-3.5 h-3.5 text-orange-400 animate-badge-pulse" />
+                    <span className="text-white text-[10px] font-medium tracking-wide">Trending</span>
+                  </div>
+                )}
+
                 <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
                   <div className="flex justify-between items-start">
-                    <span className="bg-[#ffe08b] text-[#241a00] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
+                    <span className="bg-[#ffe08b] text-[#241a00] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm mt-8">
                       Featured
                     </span>
                     <button 
@@ -260,8 +278,8 @@ export default function FestsPage() {
                 </div>
               )}
               <div className="space-y-6 stagger">
-                {upcomingFests.map((f) => (
-                  <FestCard key={f.fest_id || f.id} fest={f} />
+                {upcomingFests.map((f, idx) => (
+                  <FestCard key={f.fest_id || f.id} fest={f} isTrending={(f.registrations ?? f.total_participants ?? f.attendees ?? 0) >= trendingThreshold} />
                 ))}
               </div>
             </SectionContainer>

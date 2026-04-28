@@ -153,7 +153,8 @@ export default function HomePage() {
 
   const festSpotlight = activeEvents.find((event) => event.fest && event.fest.toLowerCase() !== "none") || null;
 
-  const firstName = userData?.name?.split(" ")?.[0] || "there";
+  const isVisitor = userData?.organization_type === "outsider";
+  const firstName = userData?.name?.split(" ")?.[0] || (isVisitor ? "Visitor" : "there");
   const campusLabel = userData?.campus || "Engineering Campus";
   const notificationCount = 0;
   const quickActions = getQuickActions(notificationCount);
@@ -177,7 +178,7 @@ export default function HomePage() {
         <section className="space-y-1 pt-2">
 
           <h1 className="text-[30px] font-black leading-tight tracking-[-0.03em] text-[var(--color-text)]">
-            Good evening, <span className="text-[var(--color-primary)]">{firstName}.</span>
+            Good evening, <span className="text-[var(--color-primary)]">{firstName === "Visitor" ? "Visitor" : firstName + "."}</span>
           </h1>
           <p className="max-w-[320px] text-[13px] leading-relaxed text-[var(--color-text-muted)]">
             Here&apos;s your curated feed of what&apos;s happening around campus this week.

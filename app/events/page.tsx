@@ -30,6 +30,18 @@ export default function EventsPage() {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Dynamically calculate the trending threshold based on the top 25% of events
+  const trendingThreshold = useMemo(() => {
+    if (!allEvents || allEvents.length === 0) return Infinity;
+    const counts = allEvents.map((e) => e.total_participants ?? 0).filter((c) => c > 0);
+    if (counts.length === 0) return Infinity;
+    counts.sort((a, b) => b - a);
+    // Top 25%, at least top 3, max out at last item
+    const index = Math.min(Math.max(2, Math.floor(counts.length * 0.25)), counts.length - 1);
+    // Needs at least 5 registrations to be considered trending, regardless of relative rank
+    return Math.max(5, counts[index]);
+  }, [allEvents]);
+
   const allFilteredEvents = useMemo(() => {
     let list = allEvents;
     if (debouncedSearch) {
@@ -76,9 +88,10 @@ export default function EventsPage() {
 
   const totalPages = Math.ceil(allFilteredEvents.length / ITEMS_PER_PAGE);
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const isDefaultView = !debouncedSearch && sort === "date";
   const events = allFilteredEvents.slice(0, startIdx + ITEMS_PER_PAGE);
-  const happeningSoonEvents = events.slice(0, 2);
-  const trendingEvents = events.slice(2);
+  const happeningSoonEvents = isDefaultView ? events.slice(0, 2) : [];
+  const trendingEvents = isDefaultView ? events.slice(2) : [];
   const hasMore = currentPage < totalPages;
 
   return (
@@ -152,30 +165,40 @@ export default function EventsPage() {
       ) : (
         <>
           <div className="space-y-6">
-            {happeningSoonEvents.length > 0 && (
-              <section className="space-y-3 animate-fade-up">
-                <div className="px-5">
-                  <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Happening Soon</h2>
-                </div>
+            {isDefaultView ? (
+              <>
+                {happeningSoonEvents.length > 0 && (
+                  <section className="space-y-3 animate-fade-up">
+                    <div className="px-5">
+                      <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Happening Soon</h2>
+                    </div>
 
-                <div className="px-5">
-                  <div className="space-y-4">
-                    {happeningSoonEvents.map((event) => (
-                      <EventCard key={event.event_id} event={event} featured showAction />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+                    <div className="px-5">
+                      <div className="space-y-4">
+                        {happeningSoonEvents.map((event) => (
+                          <EventCard key={event.event_id} event={event} featured showAction isTrending={(event.total_participants ?? 0) >= trendingThreshold} />
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                )}
 
-            {trendingEvents.length > 0 && (
-              <SectionContainer title="Trending Events" className="pt-2">
-                <div className="space-y-3 stagger">
-                  {trendingEvents.map((e) => (
-                    <EventCard key={e.event_id} event={e} showAction />
-                  ))}
-                </div>
-              </SectionContainer>
+                {trendingEvents.length > 0 && (
+                  <SectionContainer title="Trending Events" className="pt-2">
+                    <div className="space-y-3 stagger">
+                      {trendingEvents.map((e) => (
+                        <EventCard key={e.event_id} event={e} showAction isTrending={(e.total_participants ?? 0) >= trendingThreshold} />
+                      ))}
+                    </div>
+                  </SectionContainer>
+                )}
+              </>
+            ) : (
+              <div className="px-5 space-y-4 pt-2">
+                {events.map((event) => (
+                  <EventCard key={event.event_id} event={event} showAction isTrending={(event.total_participants ?? 0) >= trendingThreshold} />
+                ))}
+              </div>
             )}
           </div>
 

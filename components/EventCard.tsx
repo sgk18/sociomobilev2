@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MapPinIcon, ClockIcon, UsersIcon } from "@/components/icons";
+import { MapPinIcon, ClockIcon, UsersIcon, TrendingUpIcon } from "@/components/icons";
 import type { FetchedEvent } from "@/context/EventContext";
 import { formatDateShort, formatTime, getDaysUntil, isDeadlinePassed } from "@/lib/dateUtils";
 
@@ -11,11 +11,13 @@ export default function EventCard({
   compact,
   featured,
   showAction,
+  isTrending,
 }: {
   event: FetchedEvent;
   compact?: boolean;
   featured?: boolean;
   showAction?: boolean;
+  isTrending?: boolean;
 }) {
   // Guard: do not render a broken link if event has no valid ID
   if (!event?.event_id) return null;
@@ -86,8 +88,15 @@ export default function EventCard({
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
-        {/* Top Price Badge */}
-        <div className="absolute top-3 left-3 flex z-[1]">
+        {/* Top Left Badges */}
+        <div className="absolute top-3 left-3 flex flex-col items-start gap-2 z-[1]">
+          {isTrending && (
+            <div className="bg-black/50 backdrop-blur-md rounded-full px-2 py-1 flex items-center gap-1 shadow-sm border border-white/10">
+              <TrendingUpIcon className="w-3.5 h-3.5 text-orange-400 animate-badge-pulse" />
+              <span className="text-white text-[10px] font-medium tracking-wide">Trending</span>
+            </div>
+          )}
+          
           {!closed && (
             isFree ? (
               <span className="tag rounded-md bg-white/95 text-emerald-700 font-bold px-2 py-1 shadow-sm uppercase">

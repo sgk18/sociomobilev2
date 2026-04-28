@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarIcon, UsersIcon } from "@/components/icons";
+import { CalendarIcon, UsersIcon, TrendingUpIcon } from "@/components/icons";
 import type { Fest } from "@/context/EventContext";
 import { formatDateRange } from "@/lib/dateUtils";
 
@@ -27,7 +27,7 @@ type FestWithAttendance = Fest & {
   attendee_count?: number | null;
 };
 
-export default function FestCard({ fest }: { fest: Fest }) {
+export default function FestCard({ fest, isTrending }: { fest: Fest; isTrending?: boolean }) {
   const rawId = fest.slug || fest.fest_id;
   // Guard: do not render a broken link if the fest has no navigable ID
   if (!rawId) return null;
@@ -71,6 +71,14 @@ export default function FestCard({ fest }: { fest: Fest }) {
         sizes="(max-width:480px) 100vw, 50vw"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+      
+      {isTrending && (
+        <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 flex items-center gap-1 z-10 shadow-sm">
+          <TrendingUpIcon className="w-3.5 h-3.5 text-orange-400 animate-badge-pulse" />
+          <span className="text-white text-[10px] font-medium">Trending</span>
+        </div>
+      )}
+
       <div className="absolute inset-0 p-5 flex flex-col justify-between">
         <div className="flex justify-between items-start">
           {fest.category ? (

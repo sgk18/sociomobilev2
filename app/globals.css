@@ -75,6 +75,10 @@ html, body {
   70% { box-shadow: 0 0 0 10px rgba(21, 76, 179, 0); }
   100% { box-shadow: 0 0 0 0 rgba(21, 76, 179, 0); }
 }
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
 
 /* ── Page transition (fade + subtle upward slide) ─────────────────────────
    Composited on GPU: only opacity + transform, NO layout props.
@@ -114,6 +118,7 @@ html, body {
 .animate-float      { animation: float 3s ease-in-out infinite; }
 .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
 .animate-gradient   { background-size:200% 200%; animation: gradient-x 4s ease infinite; }
+.animate-badge-pulse { animation: badge-pulse 1.5s ease-in-out infinite; will-change: transform; }
 
 .text-glow {
   text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);

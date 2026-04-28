@@ -7,7 +7,7 @@ import { useEvents } from "@/context/EventContext";
 import EventCard from "@/components/EventCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { SearchIcon, XIcon, ArrowRightIcon, CalendarIcon, MapPinIcon, SparklesIcon, UsersIcon } from "@/components/icons";
+import { SearchIcon, XIcon, ArrowRightIcon, CalendarIcon, MapPinIcon, SparklesIcon, UsersIcon, ClockIcon, FlameIcon, TrendingUpIcon } from "@/components/icons";
 import { FilterChip } from "@/components/FilterChip";
 import { Button } from "@/components/Button";
 import { SectionContainer } from "@/components/SectionContainer";
@@ -380,6 +380,12 @@ export default function DiscoverPage() {
                               </div>
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                            
+                            <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 flex items-center gap-1 z-10 shadow-sm border border-white/10">
+                              <TrendingUpIcon className="w-3.5 h-3.5 text-orange-400 animate-badge-pulse" />
+                              <span className="text-white text-[10px] font-medium tracking-wide">Trending</span>
+                            </div>
+
                             <span className="absolute top-2.5 right-2.5 chip bg-white/92 text-[var(--color-primary)] text-[10px] font-bold">
                               Fest
                             </span>
