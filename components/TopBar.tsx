@@ -52,7 +52,7 @@ export default function TopBar() {
             )}
           </Link>
         ) : (
-          <Link href="/auth" className="w-[34px] h-[34px] rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
+          <Link href="/auth" className="w-[34px] h-[34px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(21,76,179,0.12)]">
             <UserIcon size={18} />
           </Link>
         )}

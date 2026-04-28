@@ -283,15 +283,11 @@ export default function ProfilePage() {
       {/* Profile header */}
       <div className="relative overflow-hidden text-white px-5 pt-12 pb-10">
         {/* Cover background */}
-        <div className="absolute inset-0 z-0 bg-[var(--color-primary-dark)]">
-          <Image
-            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
-            alt="Profile Cover"
-            fill
-            className="object-cover opacity-60 mix-blend-overlay"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[#3b5bdb]">
+          {/* Decorative subtle glows */}
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -left-10 w-48 h-48 bg-black/20 rounded-full blur-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1835]/80 via-transparent to-transparent" />
         </div>
         
         <div className="flex items-center gap-4 relative z-10">
