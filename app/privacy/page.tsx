@@ -7,7 +7,7 @@ export default function PrivacyPage() {
         <div className="card overflow-hidden">
           <div className="bg-[var(--color-primary-dark)] text-white px-5 py-4">
             <h1 className="text-[20px] font-extrabold">Privacy Policy</h1>
-            <p className="text-[12px] opacity-85 mt-1">Last updated: March 22, 2026</p>
+            <p className="text-[12px] opacity-85 mt-1">Effective Date: 21st April 2026</p>
           </div>
 
           <div className="p-5 space-y-5 text-[13px] leading-6 text-[var(--color-text-muted)]">
