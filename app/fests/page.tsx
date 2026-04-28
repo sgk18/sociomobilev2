@@ -110,7 +110,7 @@ export default function FestsPage() {
   // Dynamically calculate the trending threshold based on the top 25% of fests
   const trendingThreshold = useMemo(() => {
     if (!fests || fests.length === 0) return Infinity;
-    const counts = fests.map((f) => f.registrations ?? f.total_participants ?? f.attendees ?? 0).filter((c) => c > 0);
+    const counts = fests.map((f: any) => f.registrations ?? f.total_participants ?? f.attendees ?? 0).filter((c) => c > 0);
     if (counts.length === 0) return Infinity;
     counts.sort((a, b) => b - a);
     const index = Math.min(Math.max(1, Math.floor(counts.length * 0.25)), counts.length - 1);
@@ -211,7 +211,7 @@ export default function FestsPage() {
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                 
-                {(featuredFest.registrations ?? featuredFest.total_participants ?? featuredFest.attendees ?? 0) >= trendingThreshold && (
+                {((featuredFest as any).registrations ?? (featuredFest as any).total_participants ?? (featuredFest as any).attendees ?? 0) >= trendingThreshold && (
                   <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 flex items-center gap-1 z-20 shadow-sm border border-white/10">
                     <TrendingUpIcon className="w-3.5 h-3.5 text-orange-400 animate-badge-pulse" />
                     <span className="text-white text-[10px] font-medium tracking-wide">Trending</span>
@@ -279,7 +279,7 @@ export default function FestsPage() {
               )}
               <div className="space-y-6 stagger">
                 {upcomingFests.map((f, idx) => (
-                  <FestCard key={f.fest_id || f.id} fest={f} isTrending={(f.registrations ?? f.total_participants ?? f.attendees ?? 0) >= trendingThreshold} />
+                  <FestCard key={f.fest_id || f.id} fest={f} isTrending={((f as any).registrations ?? (f as any).total_participants ?? (f as any).attendees ?? 0) >= trendingThreshold} />
                 ))}
               </div>
             </SectionContainer>

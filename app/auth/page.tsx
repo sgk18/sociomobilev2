@@ -227,13 +227,6 @@ export default function AuthPage() {
         </section>
       </main>
 
-      <div className="fixed right-1/2 bottom-6 z-40 flex h-14 w-[90%] max-w-[380px] translate-x-1/2 items-center justify-between rounded-full bg-[var(--color-secondary)]/92 px-6 text-white shadow-2xl backdrop-blur-md">
-        <span className="text-xs font-medium opacity-80">SOCIO PWA</span>
-        <div className="flex gap-4">
-          <HelpCircle className="h-5 w-5 opacity-70" />
-          <Globe className="h-5 w-5 opacity-70" />
-        </div>
-      </div>
     </div>
   );
 }

@@ -159,6 +159,15 @@ export default function HomePage() {
   const notificationCount = 0;
   const quickActions = getQuickActions(notificationCount);
 
+  const currentHour = new Date().getHours();
+  let greetingText = "Good morning";
+  if (currentHour >= 12 && currentHour < 17) greetingText = "Good afternoon";
+  else if (currentHour >= 17) greetingText = "Good evening";
+
+  if (firstName === "Visitor") {
+    greetingText = "Welcome";
+  }
+
   return (
     <div
       className="pwa-page relative overflow-hidden px-5 pb-[calc(var(--bottom-nav)+var(--safe-bottom)+96px)]"
@@ -178,7 +187,7 @@ export default function HomePage() {
         <section className="space-y-1 pt-2">
 
           <h1 className="text-[30px] font-black leading-tight tracking-[-0.03em] text-[var(--color-text)]">
-            Good evening, <span className="text-[var(--color-primary)]">{firstName === "Visitor" ? "Visitor" : firstName + "."}</span>
+            {greetingText}, <span className="text-[var(--color-primary)]">{firstName === "Visitor" ? "Visitor" : firstName + "."}</span>
           </h1>
           <p className="max-w-[320px] text-[13px] leading-relaxed text-[var(--color-text-muted)]">
             Here&apos;s your curated feed of what&apos;s happening around campus this week.
