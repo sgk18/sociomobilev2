@@ -15,11 +15,13 @@ import CampusSelector, { isCampusDismissedRecently } from "@/components/CampusSe
 import PageTransition from "@/components/PageTransition";
 import { useAuth } from "@/context/AuthContext";
 
-const NO_SHELL = ["/auth", "/auth/callback", "/offline"];
+const NO_BOTTOM_NAV = ["/auth", "/auth/callback", "/offline"];
+const NO_TOP_BAR = ["/auth/callback", "/offline"];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hide = NO_SHELL.some((p) => pathname.startsWith(p));
+  const hideBottom = NO_BOTTOM_NAV.some((p) => pathname.startsWith(p));
+  const hideTop = NO_TOP_BAR.some((p) => pathname.startsWith(p));
   const { userData, session, needsCampus, refreshUserData } = useAuth();
   const [campusDismissed, setCampusDismissed] = useState(false);
 
@@ -46,14 +48,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <DesktopGate />
       <OrientationGate />
-      {!hide && <TopBar />}
+      {!hideTop && <TopBar />}
       <main>
         <PageTransition>{children}</PageTransition>
       </main>
-      {!hide && <BottomNav />}
-      {!hide && <InstallPrompt />}
-      {!hide && <ChatbotFab />}
-      {!hide && userData && <BrowserNotificationPrompt />}
+      {!hideBottom && <BottomNav />}
+      {!hideBottom && <InstallPrompt />}
+      {!hideBottom && <ChatbotFab />}
+      {!hideBottom && userData && <BrowserNotificationPrompt />}
       {needsCampus && !campusDismissed && userData && (
         <CampusSelector
           email={userData.email}

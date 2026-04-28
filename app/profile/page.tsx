@@ -281,8 +281,19 @@ export default function ProfilePage() {
   return (
     <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top))]">
       {/* Profile header */}
-      <div className="relative bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[#1a6bdb] text-white px-5 pt-7 pb-10">
-        <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+      <div className="relative overflow-hidden text-white px-5 pt-12 pb-10">
+        {/* Cover background */}
+        <div className="absolute inset-0 z-0 bg-[var(--color-primary-dark)]">
+          <Image
+            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
+            alt="Profile Cover"
+            fill
+            className="object-cover opacity-60 mix-blend-overlay"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        </div>
+        
         <div className="flex items-center gap-4 relative z-10">
           {userData.avatar_url ? (
             <Image
