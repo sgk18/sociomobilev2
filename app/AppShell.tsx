@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Capacitor } from "@capacitor/core";
+import { ScreenOrientation } from "@capacitor/screen-orientation";
 import DesktopGate from "@/components/DesktopGate";
+import OrientationGate from "@/components/OrientationGate";
 import TopBar from "@/components/TopBar";
 import BottomNav from "@/components/BottomNav";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -22,6 +25,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setCampusDismissed(isCampusDismissedRecently());
+    
+    // Lock orientation to portrait if running natively via Capacitor
+    if (Capacitor.isNativePlatform()) {
+      ScreenOrientation.lock({ orientation: "portrait" }).catch(() => {
+        // Ignore errors if plugin fails or isn't supported on device
+      });
+    }
   }, []);
 
   const handleCampusComplete = (campus: string) => {
@@ -35,6 +45,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <DesktopGate />
+      <OrientationGate />
       {!hide && <TopBar />}
       <main>
         <PageTransition>{children}</PageTransition>
