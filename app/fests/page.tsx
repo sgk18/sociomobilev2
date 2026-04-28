@@ -23,8 +23,7 @@ export default function FestsPage() {
   const debouncedSearch = useDebounce(search, 250);
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-
-
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -121,39 +120,67 @@ export default function FestsPage() {
   const upcomingFests = displayedFests.slice(1);
 
   return (
-    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+8px)] max-w-[420px] mx-auto space-y-8">
-      {/* Search */}
-      <div className="px-5 pb-4">
-        <div className="relative w-full">
-          <SearchIcon size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search fests..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full bg-[#e8e8e8] text-[#1a1c1c] placeholder:text-gray-500 border-none rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-[#dae2ff] focus:outline-none transition-shadow text-[15px] shadow-sm"
-          />
-          {search && (
-            <button 
+    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+4px)] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto space-y-8">
+      {/* Search & Header Row */}
+      <div className="px-5 pt-2 pb-4 h-[60px] flex flex-col justify-center">
+        {!isSearchOpen ? (
+          <div className="flex items-center justify-between animate-fade-in">
+            <h1 className="text-[26px] font-black tracking-tight text-[var(--color-text)]">Fests</h1>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 animate-fade-in">
+            <div className="relative group flex-1 min-w-0">
+              <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search fests..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full h-[46px] pl-[44px] pr-10 text-[14px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all duration-200 placeholder:text-[var(--color-text-muted)] font-medium"
+              />
+              {search && (
+                <button 
+                  onClick={() => {
+                    setSearch("");
+                    setCurrentPage(1);
+                  }} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-1.5 rounded-full hover:bg-black/5 z-[1]"
+                  aria-label="Clear search"
+                >
+                  <XIcon size={16} />
+                </button>
+              )}
+            </div>
+            <button
               onClick={() => {
+                setIsSearchOpen(false);
                 setSearch("");
                 setCurrentPage(1);
-              }} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors p-1.5 rounded-full hover:bg-black/5"
-              aria-label="Clear search"
+              }}
+              className="text-[13px] font-bold text-[var(--color-primary-dark)] px-1 shrink-0"
             >
-              <XIcon size={16} />
+              Cancel
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Filter chips */}
-      <div className="h-scroll mb-2 gap-2.5">
+      <div className="h-scroll mb-2 gap-2.5 items-center">
         <div className="shrink-0 w-4" aria-hidden />
+        {!isSearchOpen && (
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="shrink-0 p-2 -ml-2 mr-1 flex items-center justify-center text-[var(--color-text)] transition-transform active:scale-95"
+            aria-label="Open search"
+          >
+            <SearchIcon size={20} strokeWidth={2.5} />
+          </button>
+        )}
         {["All", "Today", "This Week", "Free", "Popular"].map((filter) => {
           const active = filter === activeCategory;
           return (

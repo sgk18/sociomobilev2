@@ -159,10 +159,16 @@ export default function RegisterPage() {
     return Object.keys(errs).length === 0;
   };
 
+  const isOutsiderRestricted = event && !event.allow_outsiders && userData?.organization_type === "outsider";
+
   /* ── Submit ── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError(null);
+    if (isOutsiderRestricted) {
+      setRegError("This event is only for Christ University members. External participants cannot register.");
+      return;
+    }
     if (alreadyRegistered) {
       setRegError("You are already registered for this event.");
       return;
@@ -393,18 +399,18 @@ export default function RegisterPage() {
         ))}
 
         {/* Error */}
-        {regError && (
+        {(regError || isOutsiderRestricted) && (
           <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 flex items-start gap-2">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
-            <span>{regError}</span>
+            <span>{isOutsiderRestricted ? "This event is only for Christ University members. External participants cannot register." : regError}</span>
           </div>
         )}
 
         {/* Submit */}
         <button
           type="submit"
-          disabled={submitting || alreadyRegistered}
-          className="btn btn-primary w-full text-sm"
+          disabled={submitting || alreadyRegistered || !!isOutsiderRestricted}
+          className={`btn w-full text-sm ${isOutsiderRestricted ? "bg-red-100 text-red-700" : "btn-primary"}`}
         >
           {submitting ? (
             <Loader2 size={18} className="animate-spin" />

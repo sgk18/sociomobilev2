@@ -49,7 +49,7 @@ export default function TopBar() {
                 width={34}
                 height={34}
                 className={`rounded-full object-cover shadow-[0_4px_14px_rgba(21,76,179,0.12)] ${
-                  isProfile ? "ring-2 ring-[var(--color-primary-light)]" : "ring-2 ring-white"
+                  isProfile ? "ring-2 ring-[#3b5bdb]" : "ring-2 ring-white"
                 }`}
               />
             ) : (

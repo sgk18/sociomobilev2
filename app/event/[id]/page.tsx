@@ -164,16 +164,20 @@ export default function EventDetailPage() {
       return;
     }
 
+    // outsider check
+    if (userData.organization_type === "outsider" && !event.allow_outsiders) {
+      setRegError("OUTSIDER_NOT_ALLOWED");
+      setTimeout(() => {
+        errorRef.current?.focus();
+        errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+      return;
+    }
+
     // custom fields or team → redirect
     const customFields = parseJsonField(event.custom_fields);
     if (customFields.length > 0 || event.participants_per_team > 1) {
       router.push(`/event/${event.event_id}/register`);
-      return;
-    }
-
-    // outsider check
-    if (userData.organization_type === "outsider" && !event.allow_outsiders) {
-      setRegError("OUTSIDER_NOT_ALLOWED");
       return;
     }
 

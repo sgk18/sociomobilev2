@@ -20,15 +20,15 @@ const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ReactNode }[] = [
   { key: "name", label: "A-Z", icon: <SortAZIcon size={11} /> },
 ];
 
-const ITEMS_PER_PAGE = 8;
-
 export default function EventsPage() {
   const { allEvents, isLoading } = useEvents();
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 250);
+  const [debouncedSearch] = useDebounce(search, 300);
   const [sort, setSort] = useState<SortKey>("date");
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const ITEMS_PER_PAGE = 5;
 
   // Dynamically calculate the trending threshold based on the top 25% of events
   const trendingThreshold = useMemo(() => {
@@ -95,38 +95,67 @@ export default function EventsPage() {
   const hasMore = currentPage < totalPages;
 
   return (
-    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+8px)] max-w-[420px] mx-auto">
-      {/* Header */}
-      <div className="px-5 mb-4">
-        <h1 className="text-lg font-extrabold">Events</h1>
-      </div>
-
-      {/* Search */}
-      <div className="px-5 pb-4">
-        <div className="relative group min-w-0">
-          <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]" />
-          <input
-            type="text"
-            placeholder="Search events…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-[46px] pl-[44px] pr-10 text-[14px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all duration-200 placeholder:text-[var(--color-text-muted)] font-medium"
-          />
-          {search && (
-            <button 
-              onClick={() => setSearch("")} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-1.5 rounded-full hover:bg-black/5 z-[1]"
-              aria-label="Clear search"
+    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+4px)] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
+      {/* Search & Header Row */}
+      <div className="px-5 pt-2 pb-4 h-[60px] flex flex-col justify-center">
+        {!isSearchOpen ? (
+          <div className="flex items-center justify-between animate-fade-in">
+            <h1 className="text-[26px] font-black tracking-tight text-[var(--color-text)]">Events</h1>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 animate-fade-in">
+            <div className="relative group flex-1 min-w-0">
+              <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search events…"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full h-[46px] pl-[44px] pr-10 text-[14px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all duration-200 placeholder:text-[var(--color-text-muted)] font-medium"
+              />
+              {search && (
+                <button 
+                  onClick={() => {
+                    setSearch("");
+                    setCurrentPage(1);
+                  }} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-1.5 rounded-full hover:bg-black/5 z-[1]"
+                  aria-label="Clear search"
+                >
+                  <XIcon size={16} />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                setIsSearchOpen(false);
+                setSearch("");
+                setCurrentPage(1);
+              }}
+              className="text-[13px] font-bold text-[var(--color-primary-dark)] px-1 shrink-0"
             >
-              <XIcon size={16} />
+              Cancel
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
-      <div className="h-scroll mb-6 gap-2.5">
+      <div className="h-scroll mb-6 gap-2.5 items-center">
         <div className="shrink-0 w-4" aria-hidden />
+        {!isSearchOpen && (
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="shrink-0 p-2 -ml-2 mr-1 flex items-center justify-center text-[var(--color-text)] transition-transform active:scale-95"
+            aria-label="Open search"
+          >
+            <SearchIcon size={20} strokeWidth={2.5} />
+          </button>
+        )}
         <FilterChip
           label="Open only"
           icon={<FilterIcon size={14} />}
