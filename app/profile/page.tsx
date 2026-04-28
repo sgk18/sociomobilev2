@@ -576,8 +576,6 @@ export default function ProfilePage() {
           Load More Events
           </Button>
         )}
-        </>
-        )}
       </div>
 
       {/* Sign out */}
