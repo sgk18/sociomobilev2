@@ -110,15 +110,7 @@ export default function FestDetailPage() {
 
   return (
     <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+16px)]">
-      {/* Back */}
-      <div className="px-4 pt-3 pb-2">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
-      </div>
+
 
       {/* Banner */}
       <div className="relative aspect-[2/1] mx-4 rounded-2xl overflow-hidden bg-gray-100">

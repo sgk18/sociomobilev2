@@ -334,15 +334,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="pwa-page pb-[calc(var(--bottom-nav)+var(--safe-bottom)+120px)] pt-[calc(var(--nav-height)+var(--safe-top)+16px)]">
-      {/* Back */}
-      <div className="px-4 pt-3 pb-2">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
-      </div>
+
 
       {/* Hero image */}
       <div className="relative aspect-[16/9] mx-4 rounded-2xl overflow-hidden bg-gray-100">
@@ -566,7 +558,7 @@ export default function EventDetailPage() {
       )}
 
       {/* Sticky register bar */}
-      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom))] left-0 right-0 z-40 glass border-t border-white/30 p-3 px-4 animate-slide-up">
+      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+14px)] left-1/2 -translate-x-1/2 w-[min(92vw,400px)] z-40 bg-white/95 backdrop-blur-xl border border-[var(--color-border)] shadow-[0_12px_40px_rgba(17,24,39,0.15)] p-3 px-4 rounded-[20px] animate-slide-up">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-lg font-extrabold text-[var(--color-text)]">

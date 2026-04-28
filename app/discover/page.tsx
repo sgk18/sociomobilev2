@@ -141,6 +141,8 @@ export default function DiscoverPage() {
       });
     } else if (activeCategory === "Free") {
       list = list.filter(e => !e.registration_fee || e.registration_fee === 0);
+    } else if (activeCategory !== "All") {
+      list = list.filter(e => e.category?.trim().toLowerCase() === activeCategory.toLowerCase());
     }
 
     if (showOpen) {
