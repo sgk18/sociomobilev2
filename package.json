@@ -6,12 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
+    "@capacitor/screen-orientation": "^8.0.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.57.4",
     "dayjs": "^1.11.19",
@@ -26,6 +27,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.4",
     "tailwindcss": "^4.1.4",
     "typescript": "^5"
   }

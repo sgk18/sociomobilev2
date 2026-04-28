@@ -69,8 +69,45 @@ html, body {
 @keyframes float     { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
 @keyframes gradient-x { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
 @keyframes confetti  { 0% { opacity:1; transform:translateY(0) rotate(0deg); } 100% { opacity:0; transform:translateY(80px) rotate(180deg); } }
-@keyframes glow      { 0%,100% { box-shadow: 0 0 8px rgba(21,76,179,0.3); } 50% { box-shadow: 0 0 20px rgba(21,76,179,0.5); } }
 @keyframes marquee   { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes pulse-blue {
+  0% { box-shadow: 0 0 0 0 rgba(21, 76, 179, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(21, 76, 179, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(21, 76, 179, 0); }
+}
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* ── Page transition (fade + subtle upward slide) ─────────────────────────
+   Composited on GPU: only opacity + transform, NO layout props.
+   Duration 220ms keeps it snappy without feeling abrupt.
+   ──────────────────────────────────────────────────────────────────────── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: page-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Isolate to its own stacking context so it never triggers full-page reflow */
+  contain: layout style;
+}
+
+/* ── FAB glow pulse ───────────────────────────────────────────────────────
+   Very light — opacity only, no box-shadow animation on low-end devices.
+   ──────────────────────────────────────────────────────────────────────── */
+@keyframes fab-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.82; }
+}
 
 .animate-fade-up    { animation: fade-up .4s cubic-bezier(.22,1,.36,1) both; }
 .animate-fade-in    { animation: fade-in .3s ease-out both; }
@@ -81,7 +118,15 @@ html, body {
 .animate-float      { animation: float 3s ease-in-out infinite; }
 .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
 .animate-gradient   { background-size:200% 200%; animation: gradient-x 4s ease infinite; }
-.animate-glow       { animation: glow 2s ease-in-out infinite; }
+.animate-badge-pulse { animation: badge-pulse 1.5s ease-in-out infinite; will-change: transform; }
+
+.text-glow {
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+}
+.brand-pulse {
+  box-shadow: 0 0 0 0 rgba(21, 76, 179, 0.4);
+  animation: pulse-blue 2s infinite;
+}
 
 .stagger > *:nth-child(1) { animation-delay:0ms; }
 .stagger > *:nth-child(2) { animation-delay:50ms; }
@@ -135,37 +180,114 @@ html, body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 24px; border-radius: var(--radius);
-  font-weight: 700; font-size: 14px; cursor: pointer;
-  border: none; outline: none; transition: all .15s ease;
+  font-weight: 600; font-size: 14px; cursor: pointer;
+  border: none; outline: none;
+  /* GPU composited only — no background or box-shadow transitions */
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   150ms ease;
   position: relative; overflow: hidden;
   min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
 }
 .btn::after {
   content: ""; position: absolute; inset: 0;
   background: linear-gradient(rgba(255,255,255,0.1), transparent);
   pointer-events: none;
 }
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.btn-primary { background: var(--color-primary); color: white; box-shadow: var(--shadow-primary); }
-.btn-primary:hover:not(:disabled) { background: var(--color-primary-dark); }
-.btn-accent { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 800; box-shadow: 0 4px 14px rgba(255,204,0,0.35); }
+.btn:active:not(:disabled) { transform: scale(0.97); opacity: 0.92; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; filter: grayscale(30%); }
+
+.btn-primary { 
+  background: linear-gradient(to right, var(--color-primary), var(--color-primary-dark)); 
+  color: white; 
+  box-shadow: var(--shadow-primary); 
+}
+.btn-primary:hover:not(:disabled) { 
+  background: linear-gradient(to right, var(--color-primary-dark), #031a3d); 
+}
+
+.btn-accent { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 700; box-shadow: 0 4px 14px rgba(255,204,0,0.35); }
 .btn-ghost { background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-border); }
 .btn-ghost:hover:not(:disabled) { background: var(--color-primary-light); border-color: var(--color-primary); }
 .btn-danger { background: transparent; color: var(--color-danger); border: 1.5px solid #fecaca; }
 .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: var(--radius-sm); min-height: 32px; }
 .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: var(--radius-xs); }
 
-/* ── Card ── */
-.card {
-  background: var(--color-surface); border-radius: var(--radius);
-  overflow: hidden; box-shadow: var(--shadow-card);
-  transition: transform .2s ease, box-shadow .2s ease;
+/* ── Unified Card System ── */
+
+/* Level 3: Standard Cards (Lists) */
+.card, .premium-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border); /* optional subtle outline */
+  box-shadow: var(--shadow-sm); /* very soft or none */
+  overflow: hidden;
+  /* GPU-composited only: transform, NO box-shadow transitions */
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   200ms ease;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
 }
-.card:active { transform: scale(0.985); }
+.card:active, .premium-card:active { transform: scale(0.97); }
+
+/* Level 2: Elevated Cards (Trending / Fests) */
 .card-elevated {
-  background: var(--color-surface); border-radius: var(--radius);
-  overflow: hidden; box-shadow: var(--shadow);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow); /* shadow-soft */
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   200ms ease;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+.card-elevated:active { transform: scale(0.97); }
+
+/* Level 1: Hero Card (Featured) */
+.card-hero {
+  background: var(--color-surface);
+  border-radius: 1.25rem; /* 2xl */
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), var(--shadow-primary); /* shadow-hero */
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   200ms ease;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+.card-hero:active { transform: scale(0.97); }
+
+/* ── Shared polish utilities ── */
+.shadow-soft { box-shadow: var(--shadow); }
+.shadow-hero { box-shadow: var(--shadow-lg), var(--shadow-primary); }
+
+/* ── Active-state interaction (composited only) ───────────────────────── */
+.btn-active-state {
+  /* GPU-composited properties only: transform & opacity */
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   200ms cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.btn-active-state:active { transform: scale(0.96); opacity: 0.95; }
+
+/* ── FAB — GPU-only animation, no box-shadow changes ─────────────────── */
+.fab-glow {
+  /* Static shadow; animation targets opacity only via fab-pulse */
+  box-shadow: 0 8px 24px rgba(21,76,179,0.36);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   150ms ease;
+  animation: fab-pulse 3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.fab-glow:hover  { transform: scale(1.07); }
+.fab-glow:active { transform: scale(0.94); opacity: 0.9; }
+
+/* Honour prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter    { animation: none !important; }
+  .fab-glow      { animation: none !important; }
+  .btn-active-state:active { transform: none; }
 }
 
 /* ── Input ── */
@@ -173,7 +295,9 @@ html, body {
   width: 100%; padding: 12px 16px; border-radius: var(--radius);
   border: 1.5px solid var(--color-border); font-size: 14px;
   font-family: inherit; background: white; color: var(--color-text);
-  transition: border-color .2s, box-shadow .2s; outline: none;
+  /* border-color is cheap (no layout), box-shadow is composited */
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  outline: none;
   min-height: 44px;
 }
 .input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(21,76,179,0.1); }
@@ -338,3 +462,8 @@ html, body {
 .tag-paid { background: #fef3c7; color: #92400e; }
 .tag-live { background: #fee2e2; color: #dc2626; }
 .tag-closed { background: #f3f4f6; color: #6b7280; }
+
+/* ── Avatar Group ── */
+.avatar-group { display: flex; align-items: center; }
+.avatar-group > * { margin-left: -8px; border: 2px solid white; border-radius: 9999px; position: relative; }
+.avatar-group > *:first-child { margin-left: 0; }

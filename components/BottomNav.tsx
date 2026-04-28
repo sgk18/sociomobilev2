@@ -34,9 +34,9 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
-              className={`relative flex flex-col items-center justify-center gap-0.5 rounded-[14px] py-2 transition-all duration-200 ${
+              className={`relative btn-active-state flex flex-col items-center justify-center gap-0.5 rounded-[14px] py-2 transition-all duration-200 ${
                 active
-                  ? "text-[var(--color-primary)] bg-[var(--color-primary-light)]"
+                  ? "text-[var(--color-primary)] bg-[var(--color-primary-light)] shadow-[var(--shadow-sm)]"
                   : "text-[var(--color-text-light)]"
               }`}
             >
@@ -48,7 +48,7 @@ export default function BottomNav() {
               </div>
               <span
                 className={`text-[10px] leading-none transition-all ${
-                  active ? "font-bold" : "font-semibold"
+                  active ? "font-extrabold" : "font-semibold"
                 }`}
               >
                 {label}

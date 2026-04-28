@@ -1,11 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import FestCard from "@/components/FestCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { Search, X, Sparkles } from "lucide-react";
+import { SearchIcon, XIcon, SparklesIcon, HeartIcon, CalendarIcon, FlameIcon, ArrowRightIcon, TrendingUpIcon } from "@/components/icons";
+import { Button } from "@/components/Button";
+import { FilterChip } from "@/components/FilterChip";
+import { SectionContainer } from "@/components/SectionContainer";
 import type { Fest } from "@/context/EventContext";
+import { useDebounce } from "@/lib/useDebounce";
+import { formatDateRange, isDeadlinePassed } from "@/lib/dateUtils";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -13,63 +20,121 @@ export default function FestsPage() {
   const [fests, setFests] = useState<Fest[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 250);
+  const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+
+
 
   useEffect(() => {
     (async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
-        const res = await fetch(`/api/pwa/fests`);
+        const res = await fetch(`/api/pwa/fests`, { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
-          const festArray = data.fests ?? data ?? [];
-          setFests(Array.isArray(festArray) ? festArray : []);
+          const festArray = data.fests ?? data.data ?? data ?? [];
+          if (!Array.isArray(festArray) || festArray.length === 0) {
+            setFests([]);
+          } else {
+            setFests(festArray);
+          }
         } else {
           console.error("Failed to fetch fests:", res.status);
         }
       } catch (err) {
         console.error("Error fetching fests:", err);
+      } finally {
+        clearTimeout(timeoutId);
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, []);
 
-  const filtered = search
-    ? fests.filter(
+  const filtered = useMemo(() => {
+    let list = fests;
+    const q = debouncedSearch.trim().toLowerCase();
+    
+    if (q) {
+      list = list.filter(
         (f) =>
-          (f.fest_title || f.name || "").toLowerCase().includes(search.toLowerCase()) ||
-          (f.organizing_dept || f.department || "").toLowerCase().includes(search.toLowerCase())
-      )
-    : fests;
+          String(f.fest_title || f.name || "").toLowerCase().includes(q) ||
+          String(f.organizing_dept || f.department || "").toLowerCase().includes(q)
+      );
+    }
+    
+    if (activeCategory === "Today") {
+      const today = new Date().toDateString();
+      list = list.filter(f => {
+        const d = new Date(f.opening_date || (f as any).start_date || 0);
+        return d.toDateString() === today;
+      });
+    } else if (activeCategory === "This Week") {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+      list = list.filter(f => {
+        const d = new Date(f.opening_date || (f as any).start_date || 0);
+        return d >= today && d <= nextWeek;
+      });
+    } else if (activeCategory === "Free") {
+      // Assuming fests without explicit fee or marked free
+      list = list.filter(f => !(f as any).registration_fee || (f as any).registration_fee === 0);
+    } else if (activeCategory === "Popular") {
+      list = [...list].sort((a, b) => {
+        const aCount = (a as any).total_participants ?? (a as any).attendees ?? 0;
+        const bCount = (b as any).total_participants ?? (b as any).attendees ?? 0;
+        return bCount - aCount;
+      });
+    }
+
+    if (activeCategory !== "Popular") {
+      list = [...list].sort((a, b) => {
+        const aClosed = isDeadlinePassed(a.closing_date || (a as any).end_date);
+        const bClosed = isDeadlinePassed(b.closing_date || (b as any).end_date);
+        if (aClosed !== bClosed) return aClosed ? 1 : -1;
+        return new Date(a.opening_date || (a as any).start_date || 0).getTime() - new Date(b.opening_date || (b as any).start_date || 0).getTime();
+      });
+    }
+    return list;
+  }, [fests, debouncedSearch, activeCategory]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const displayedFests = filtered.slice(0, startIdx + ITEMS_PER_PAGE);
   const hasMore = currentPage < totalPages;
 
-  return (
-    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+8px)]">
-      {/* Header */}
-      <div className="px-4 mb-3">
-        <h1 className="text-lg font-extrabold">Fests</h1>
-        <p className="text-[12px] text-[var(--color-text-muted)]">
-          Campus festivals & mega events
-        </p>
-      </div>
+  // Dynamically calculate the trending threshold based on the top 25% of fests
+  const trendingThreshold = useMemo(() => {
+    if (!fests || fests.length === 0) return Infinity;
+    const counts = fests.map((f: any) => f.registrations ?? f.total_participants ?? f.attendees ?? 0).filter((c) => c > 0);
+    if (counts.length === 0) return Infinity;
+    counts.sort((a, b) => b - a);
+    const index = Math.min(Math.max(1, Math.floor(counts.length * 0.25)), counts.length - 1);
+    return Math.max(5, counts[index]);
+  }, [fests]);
 
+  const featuredFest = displayedFests.length > 0 ? displayedFests[0] : null;
+  const upcomingFests = displayedFests.slice(1);
+
+  return (
+    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+8px)] max-w-[420px] mx-auto space-y-8">
       {/* Search */}
-      <div className="px-5 mb-4">
-        <div className="relative group min-w-0">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-light)] group-focus-within:text-[var(--color-primary)] transition-colors pointer-events-none z-[1]" />
+      <div className="px-5 pb-4">
+        <div className="relative w-full">
+          <SearchIcon size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search fests…"
+            placeholder="Search fests..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full h-[44px] text-[14px] bg-white border-[1.5px] border-[var(--color-border)] rounded-[var(--radius)] outline-none focus:border-[var(--color-primary)] focus:shadow-[0_0_0_3px_rgba(21,76,179,0.1)] transition-all placeholder:text-[var(--color-text-muted)]"
-            style={{ paddingLeft: 42, paddingRight: 40 }}
+            className="w-full bg-[#e8e8e8] text-[#1a1c1c] placeholder:text-gray-500 border-none rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-[#dae2ff] focus:outline-none transition-shadow text-[15px] shadow-sm"
           />
           {search && (
             <button 
@@ -77,49 +142,147 @@ export default function FestsPage() {
                 setSearch("");
                 setCurrentPage(1);
               }} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-light)] hover:text-[var(--color-text)] transition-colors p-1.5 rounded-full hover:bg-black/5 z-[1]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors p-1.5 rounded-full hover:bg-black/5"
               aria-label="Clear search"
             >
-              <X size={16} />
+              <XIcon size={16} />
             </button>
           )}
         </div>
       </div>
 
-      {/* List */}
+      {/* Filter chips */}
+      <div className="h-scroll mb-2 gap-2.5">
+        <div className="shrink-0 w-4" aria-hidden />
+        {["All", "Today", "This Week", "Free", "Popular"].map((filter) => {
+          const active = filter === activeCategory;
+          return (
+            <FilterChip
+              key={filter}
+              label={filter}
+              isActive={active}
+              onClick={() => {
+                setActiveCategory(filter);
+                setCurrentPage(1);
+              }}
+            />
+          );
+        })}
+        <div className="shrink-0 w-4" aria-hidden />
+      </div>
+
       {loading ? (
-        <div className="px-4 space-y-3">
-          <Skeleton className="h-44 w-full rounded-[var(--radius)]" count={3} />
+        <div className="px-5 space-y-6">
+          <Skeleton className="h-[400px] w-full rounded-[1.25rem]" />
+          <Skeleton className="h-[220px] w-full rounded-[1.25rem]" count={2} />
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={<Sparkles size={28} className="text-[var(--color-primary)]" />}
-          title="No fests found"
-          subtitle={search ? "Try a different search" : "Check back soon for upcoming fests"}
-        />
+        <div className="px-5">
+          <EmptyState
+            icon={<SparklesIcon size={28} className="text-[var(--color-primary)]" />}
+            title="No fests found"
+            subtitle={search ? "Try a different search" : "Check back soon for upcoming fests"}
+          />
+        </div>
       ) : (
         <>
-          <div className="px-4 space-y-3 stagger">
-            {displayedFests.map((f) => (
-              <FestCard key={f.fest_id || f.id} fest={f} />
-            ))}
-          </div>
-
-          {/* Pagination info and load more button */}
-          {filtered.length > ITEMS_PER_PAGE && (
-            <div className="px-4 py-4 flex items-center justify-between">
-              <p className="text-[12px] text-[var(--color-text-muted)] font-semibold">
-                Showing {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+          {/* Featured Fest */}
+          {featuredFest && (
+            <SectionContainer title="Featured Fest">
+              <p className="text-[#434653] font-medium mb-3 -mt-2">
+                Don't miss out on the biggest events this season.
               </p>
+
+              <Link
+                href={`/fest/${featuredFest.slug || featuredFest.fest_id}`}
+                className="card-hero relative block w-full h-[400px] group cursor-pointer border border-white/40"
+              >
+                <Image
+                  src={
+                    (featuredFest.fest_image_url || featuredFest.banner_url || featuredFest.image_url)
+                      ? (featuredFest.fest_image_url || featuredFest.banner_url || featuredFest.image_url)!
+                      : "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
+                  }
+                  alt={featuredFest.fest_title || featuredFest.name || "Featured Fest"}
+                  fill
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  priority
+                />
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                
+                {((featuredFest as any).registrations ?? (featuredFest as any).total_participants ?? (featuredFest as any).attendees ?? 0) >= trendingThreshold && (
+                  <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 flex items-center gap-1 z-20 shadow-sm border border-white/10">
+                    <TrendingUpIcon className="w-3.5 h-3.5 text-orange-400 animate-badge-pulse" />
+                    <span className="text-white text-[10px] font-medium tracking-wide">Trending</span>
+                  </div>
+                )}
+
+                <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
+                  <div className="flex justify-between items-start">
+                    <span className="bg-[#ffe08b] text-[#241a00] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm mt-8">
+                      Featured
+                    </span>
+                    <button 
+                      className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/40 transition-all active:scale-90"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Add favorite logic here if needed
+                      }}
+                    >
+                      <HeartIcon size={20} className="text-white" />
+                    </button>
+                  </div>
+                  <div>
+                    <h2 className="text-4xl font-extrabold text-white mb-2 leading-tight tracking-tight drop-shadow-md text-glow">
+                      {featuredFest.fest_title || featuredFest.name}
+                      <br />
+                      <span className="text-2xl font-bold text-[#b2c5ff]">
+                        {featuredFest.organizing_dept || featuredFest.department || "Cultural Extravaganza"}
+                      </span>
+                    </h2>
+                    <div className="flex items-center gap-2 text-[#e2e2e2] mb-6 text-sm font-medium">
+                      <CalendarIcon size={18} />
+                      <span>
+                        {formatDateRange(featuredFest.opening_date || featuredFest.start_date, featuredFest.closing_date || featuredFest.end_date)}
+                      </span>
+                      <span className="bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded text-xs ml-2 flex items-center gap-1 font-bold">
+                        <FlameIcon size={14} /> Trending
+                      </span>
+                    </div>
+                    <Button 
+                      fullWidth 
+                      variant={isDeadlinePassed(featuredFest.closing_date || (featuredFest as any).end_date) ? "ghost" : "primary"}
+                      rightIcon={!isDeadlinePassed(featuredFest.closing_date || (featuredFest as any).end_date) ? <ArrowRightIcon size={20} /> : undefined}
+                      className={isDeadlinePassed(featuredFest.closing_date || (featuredFest as any).end_date) ? "bg-white/10 text-white/50 cursor-not-allowed" : ""}
+                    >
+                      {isDeadlinePassed(featuredFest.closing_date || (featuredFest as any).end_date) ? "Closed" : "Explore Fest"}
+                    </Button>
+                  </div>
+                </div>
+              </Link>
+            </SectionContainer>
+          )}
+
+          {/* Upcoming Fests */}
+          {upcomingFests.length > 0 && (
+            <SectionContainer title="Upcoming Fests">
               {hasMore && (
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="btn btn-primary text-[12px] px-4 py-1.5"
-                >
-                  Load More
-                </button>
+                <div className="flex justify-end mb-4 -mt-8 relative z-10">
+                  <button 
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="text-[var(--color-primary-dark)] font-bold text-sm hover:underline"
+                  >
+                    Load More
+                  </button>
+                </div>
               )}
-            </div>
+              <div className="space-y-6 stagger">
+                {upcomingFests.map((f, idx) => (
+                  <FestCard key={f.fest_id || f.id} fest={f} isTrending={((f as any).registrations ?? (f as any).total_participants ?? (f as any).attendees ?? 0) >= trendingThreshold} />
+                ))}
+              </div>
+            </SectionContainer>
           )}
         </>
       )}

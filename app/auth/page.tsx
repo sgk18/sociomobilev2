@@ -99,7 +99,7 @@ export default function AuthPage() {
       <div className="absolute -top-20 -right-16 h-72 w-72 rounded-full bg-[var(--color-primary)]/12 blur-3xl" />
       <div className="absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-[var(--color-accent)]/18 blur-3xl" />
 
-      <main className="relative mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-6 pt-12 pb-24">
+      <main className="relative mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-6 pt-[calc(var(--nav-height)+var(--safe-top)+32px)] pb-24">
         <section className="flex flex-1 flex-col justify-center gap-10">
           <header className="flex flex-col items-center text-center">
             <div className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-[var(--color-primary)] shadow-[0_14px_40px_rgba(21,76,179,0.18)]">
@@ -227,13 +227,6 @@ export default function AuthPage() {
         </section>
       </main>
 
-      <div className="fixed right-1/2 bottom-6 z-40 flex h-14 w-[90%] max-w-[380px] translate-x-1/2 items-center justify-between rounded-full bg-[var(--color-secondary)]/92 px-6 text-white shadow-2xl backdrop-blur-md">
-        <span className="text-xs font-medium opacity-80">SOCIO PWA</span>
-        <div className="flex gap-4">
-          <HelpCircle className="h-5 w-5 opacity-70" />
-          <Globe className="h-5 w-5 opacity-70" />
-        </div>
-      </div>
     </div>
   );
 }

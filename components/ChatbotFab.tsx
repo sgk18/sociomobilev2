@@ -88,6 +88,9 @@ export default function ChatbotFab() {
   const allQA = [...pageQA, ...GLOBAL_QA];
   const quickQuestions = [...pageQA.slice(0, 3), ...GLOBAL_QA.slice(0, Math.max(0, 3 - pageQA.length))].map((qa) => qa.q);
 
+  const isEventDetail = pathname.startsWith("/event/") && pathname.split("/").length === 3 && pathname.split("/")[2] !== "register";
+  const fabBottomOffset = isEventDetail ? "100px" : "22px";
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, displayedLen]);
@@ -131,8 +134,8 @@ export default function ChatbotFab() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open help"
-          className="fixed right-4 z-40 w-12 h-12 rounded-full border-2 border-white bg-[var(--color-primary)] text-white shadow-[0_10px_24px_rgba(21,76,179,0.35)] flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-          style={{ bottom: "calc(var(--bottom-nav) + var(--safe-bottom) + 22px)" }}
+          className="fixed right-4 z-40 h-12 w-12 rounded-full border-2 border-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white fab-glow btn-active-state flex items-center justify-center hover:scale-105 transition-transform"
+          style={{ bottom: `calc(var(--bottom-nav) + var(--safe-bottom) + ${fabBottomOffset})` }}
         >
           <MessageSquare size={19} strokeWidth={2.1} />
         </button>
@@ -152,7 +155,7 @@ export default function ChatbotFab() {
           style={{
             left: "12px",
             width: "min(86vw, 350px)",
-            bottom: "calc(var(--bottom-nav, 0px) + var(--safe-bottom, 0px) + 22px)",
+            bottom: `calc(var(--bottom-nav, 0px) + var(--safe-bottom, 0px) + ${fabBottomOffset})`,
             maxHeight: "min(68dvh, 560px)",
           }}
         >

@@ -2,18 +2,19 @@
 
 import { useNotifications, type Notification } from "@/context/NotificationContext";
 import { useRouter } from "next/navigation";
-import { Bell, Calendar, Megaphone, Info, CheckCheck, ArrowLeft, X, Check } from "lucide-react";
+import { BellIcon, CalendarIcon, MegaphoneIcon, InfoIcon, CheckCheckIcon, ArrowLeftIcon, XIcon, CheckIcon } from "@/components/icons";
+import { Button } from "@/components/Button";
 import { timeAgo } from "@/lib/dateUtils";
 
 function typeStyle(type: string) {
   switch (type) {
     case "event_update":
     case "event_reminder":
-      return { icon: <Calendar size={18} />, color: "bg-blue-50 text-[var(--color-primary)]" };
+      return { icon: <CalendarIcon size={18} />, color: "bg-blue-50 text-[var(--color-primary)]" };
     case "broadcast":
-      return { icon: <Megaphone size={18} />, color: "bg-amber-50 text-[var(--color-warning)]" };
+      return { icon: <MegaphoneIcon size={18} />, color: "bg-amber-50 text-[var(--color-warning)]" };
     default:
-      return { icon: <Info size={18} />, color: "bg-gray-100 text-[var(--color-text-muted)]" };
+      return { icon: <InfoIcon size={18} />, color: "bg-gray-100 text-[var(--color-text-muted)]" };
   }
 }
 
@@ -52,13 +53,15 @@ function Card({
       </button>
 
       <div className="mt-3 pt-2 border-t border-[var(--color-border)] flex items-center gap-2">
-        <button
+        <Button
           onClick={onClear}
-          className="btn btn-ghost btn-sm text-[12px]"
+          variant="ghost"
+          size="sm"
           title="Mark read and clear"
+          leftIcon={<CheckIcon size={14} />}
         >
-          <Check size={14} /> Mark read & Clear
-        </button>
+          Mark read & Clear
+        </Button>
       </div>
     </div>
   );
@@ -87,27 +90,31 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="px-4 flex items-center gap-3 mb-4">
         <button onClick={() => router.back()} className="p-1.5 rounded-full hover:bg-black/5">
-          <ArrowLeft size={20} />
+          <ArrowLeftIcon size={20} />
         </button>
         <h1 className="text-lg font-extrabold flex-1">Notifications</h1>
         <div className="flex gap-2">
           {unreadCount > 0 && (
-            <button
+            <Button
               onClick={markAllRead}
-              className="btn btn-ghost btn-sm text-[12px]"
+              variant="ghost"
+              size="sm"
               title="Mark all as read"
+              className="px-2"
             >
-              <CheckCheck size={14} />
-            </button>
+              <CheckCheckIcon size={14} />
+            </Button>
           )}
           {notifications.length > 0 && (
-            <button
+            <Button
               onClick={handleDismissAll}
-              className="btn btn-ghost btn-sm text-[12px]"
+              variant="ghost"
+              size="sm"
               title="Clear all notifications"
+              className="px-2"
             >
-              <X size={14} />
-            </button>
+              <XIcon size={14} />
+            </Button>
           )}
         </div>
       </div>
@@ -121,7 +128,7 @@ export default function NotificationsPage() {
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center px-6">
           <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4 animate-bounce-in">
-            <Bell size={28} className="text-[var(--color-primary)]" />
+            <BellIcon size={28} className="text-[var(--color-primary)]" />
           </div>
           <p className="text-base font-bold text-[var(--color-text)]">All caught up!</p>
           <p className="text-sm text-[var(--color-text-muted)] mt-1 max-w-[240px]">

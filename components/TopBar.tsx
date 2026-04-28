@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeftIcon, UserIcon } from "@/components/icons";
 
 // Pages that show back button instead of logo
 const BACK_PAGES = ["/event/", "/fest/", "/notifications"];
@@ -16,10 +16,15 @@ export default function TopBar() {
   const pathname = usePathname();
 
   const showBack = BACK_PAGES.some((p) => pathname.startsWith(p));
+  const isProfile = pathname === "/profile";
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 glass border-b border-[var(--color-border)] will-change-none"
+      className={`fixed top-0 left-0 right-0 z-50 will-change-none border-b transition-colors duration-200 ${
+        isProfile
+          ? "bg-[var(--color-primary-dark)] border-transparent text-white"
+          : "glass border-[var(--color-border)] text-[var(--color-text)]"
+      }`}
       style={{ paddingTop: "var(--safe-top)", backfaceVisibility: "hidden" }}
     >
       <div
@@ -33,7 +38,7 @@ export default function TopBar() {
             className="back-btn"
             aria-label="Go back"
           >
-            <ArrowLeft size={18} strokeWidth={2.2} />
+            <ArrowLeftIcon size={18} strokeWidth={2.2} />
           </button>
         ) : userData ? (
           <Link href="/profile" className="shrink-0">
@@ -43,7 +48,9 @@ export default function TopBar() {
                 alt={userData.name}
                 width={34}
                 height={34}
-                className="rounded-full object-cover ring-2 ring-white shadow-[0_4px_14px_rgba(21,76,179,0.12)]"
+                className={`rounded-full object-cover shadow-[0_4px_14px_rgba(21,76,179,0.12)] ${
+                  isProfile ? "ring-2 ring-[var(--color-primary-light)]" : "ring-2 ring-white"
+                }`}
               />
             ) : (
               <div className="w-[34px] h-[34px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold shadow-[0_4px_14px_rgba(21,76,179,0.12)]">
@@ -52,15 +59,17 @@ export default function TopBar() {
             )}
           </Link>
         ) : (
-          <Link href="/" className="w-[34px] h-[34px] rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center text-[11px] font-black shrink-0">
-            S
+          <Link href="/auth" className="w-[34px] h-[34px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(21,76,179,0.12)]">
+            <UserIcon size={18} />
           </Link>
         )}
 
         {!showBack && (
           <Link
             href="/"
-            className="absolute left-1/2 -translate-x-1/2 text-[17px] font-black tracking-tight text-[var(--color-primary)]"
+            className={`absolute left-1/2 -translate-x-1/2 text-[17px] font-black tracking-tight ${
+              isProfile ? "text-white" : "text-[var(--color-primary)]"
+            }`}
             aria-label="Go to home"
           >
             SOCIO

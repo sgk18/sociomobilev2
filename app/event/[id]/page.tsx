@@ -13,27 +13,28 @@ import {
   formatDateRange,
 } from "@/lib/dateUtils";
 import {
-  ArrowLeft,
-  CalendarDays,
-  Clock,
-  MapPin,
-  Users,
-  Tag,
-  Ticket,
-  Globe,
-  FileText,
-  Trophy,
-  ListChecks,
-  Phone,
-  Mail,
-  MessageCircle,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  Award,
-} from "lucide-react";
+  ArrowLeftIcon as ArrowLeft,
+  CalendarIcon as CalendarDays,
+  ClockIcon as Clock,
+  MapPinIcon as MapPin,
+  UsersIcon as Users,
+  TagIcon as Tag,
+  TicketIcon as Ticket,
+  GlobeIcon as Globe,
+  FileTextIcon as FileText,
+  TrophyIcon as Trophy,
+  ListChecksIcon as ListChecks,
+  PhoneIcon as Phone,
+  MailIcon as Mail,
+  MessageCircleIcon as MessageCircle,
+  CheckCircleIcon as CheckCircle2,
+  AlertCircleIcon as AlertCircle,
+  Loader2Icon as Loader2,
+  ChevronDownIcon as ChevronDown,
+  ChevronUpIcon as ChevronUp,
+  AwardIcon as Award,
+} from "@/components/icons";
+import { Button } from "@/components/Button";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -254,8 +255,10 @@ export default function EventDetailPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 px-6 text-center">
         <AlertCircle size={40} className="text-red-400" />
         <p className="font-bold text-lg">{error || "Event not found"}</p>
-        <Link href="/discover" className="btn btn-primary text-sm mt-2">
-          Back to discover
+        <Link href="/discover" className="block mt-2">
+          <Button variant="primary" size="sm">
+            Back to discover
+          </Button>
         </Link>
       </div>
     );
@@ -276,17 +279,21 @@ export default function EventDetailPage() {
             Successfully registered for {event.title}
           </p>
           <div className="flex flex-col gap-2">
-            <Link href="/discover" className="btn btn-primary text-sm w-full">
-              Back to Discover
+            <Link href="/discover" className="block w-full">
+              <Button variant="primary" size="sm" fullWidth>
+                Back to Discover
+              </Button>
             </Link>
             {event.whatsapp_invite_link && (
               <a
                 href={event.whatsapp_invite_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-ghost text-sm w-full text-green-600 border-green-300"
+                className="block w-full"
               >
-                <MessageCircle size={16} /> Join WhatsApp
+                <Button variant="ghost" size="sm" fullWidth className="text-green-600 border border-green-300" leftIcon={<MessageCircle size={16} />}>
+                  Join WhatsApp
+                </Button>
               </a>
             )}
           </div>
@@ -327,15 +334,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="pwa-page pb-[calc(var(--bottom-nav)+var(--safe-bottom)+120px)] pt-[calc(var(--nav-height)+var(--safe-top)+16px)]">
-      {/* Back */}
-      <div className="px-4 pt-3 pb-2">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm text-[var(--color-text-muted)]"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
-      </div>
+
 
       {/* Hero image */}
       <div className="relative aspect-[16/9] mx-4 rounded-2xl overflow-hidden bg-gray-100">
@@ -559,7 +558,7 @@ export default function EventDetailPage() {
       )}
 
       {/* Sticky register bar */}
-      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom))] left-0 right-0 z-40 glass border-t border-white/30 p-3 px-4 animate-slide-up">
+      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+14px)] left-1/2 -translate-x-1/2 w-[min(92vw,400px)] z-40 bg-white/95 backdrop-blur-xl border border-[var(--color-border)] shadow-[0_12px_40px_rgba(17,24,39,0.15)] p-3 px-4 rounded-[20px] animate-slide-up">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-lg font-extrabold text-[var(--color-text)]">
@@ -569,23 +568,29 @@ export default function EventDetailPage() {
               <p className="text-[10px] text-[var(--color-text-muted)]">per team</p>
             )}
           </div>
-          <button
+          <Button
             onClick={handleRegister}
             disabled={isRegistered || isClosed || isRegistering || authLoading}
-            className={`btn text-sm flex-1 max-w-[200px] ${
+            variant={isRegistered || isClosed ? "ghost" : "primary"}
+            className={`flex-1 max-w-[200px] ${
               isRegistered
-                ? "bg-emerald-100 text-emerald-700 cursor-default"
+                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
                 : isClosed
-                ? "bg-gray-200 text-gray-500 cursor-default"
-                : "btn-primary"
+                ? "bg-gray-200 text-gray-500 hover:bg-gray-200"
+                : ""
             }`}
+            leftIcon={
+              isRegistering ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : isRegistered ? (
+                <CheckCircle2 size={16} />
+              ) : undefined
+            }
           >
             {isRegistering ? (
-              <Loader2 size={18} className="animate-spin" />
+              ""
             ) : isRegistered ? (
-              <>
-                <CheckCircle2 size={16} /> Registered
-              </>
+              "Registered"
             ) : isClosed ? (
               "Closed"
             ) : event.participants_per_team > 1 ? (
@@ -593,7 +598,7 @@ export default function EventDetailPage() {
             ) : (
               "Register now"
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

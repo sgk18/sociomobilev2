@@ -153,10 +153,20 @@ export default function HomePage() {
 
   const festSpotlight = activeEvents.find((event) => event.fest && event.fest.toLowerCase() !== "none") || null;
 
-  const firstName = userData?.name?.split(" ")?.[0] || "there";
+  const isVisitor = userData?.organization_type === "outsider";
+  const firstName = userData?.name?.split(" ")?.[0] || (isVisitor ? "Visitor" : "there");
   const campusLabel = userData?.campus || "Engineering Campus";
   const notificationCount = 0;
   const quickActions = getQuickActions(notificationCount);
+
+  const currentHour = new Date().getHours();
+  let greetingText = "Good morning";
+  if (currentHour >= 12 && currentHour < 17) greetingText = "Good afternoon";
+  else if (currentHour >= 17) greetingText = "Good evening";
+
+  if (firstName === "Visitor") {
+    greetingText = "Welcome";
+  }
 
   return (
     <div
@@ -175,14 +185,9 @@ export default function HomePage() {
 
       <div className="relative z-10 mx-auto max-w-[420px] space-y-6">
         <section className="space-y-1 pt-2">
-          <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 shadow-sm backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent-dark)]" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-              {campusLabel}
-            </span>
-          </div>
+
           <h1 className="text-[30px] font-black leading-tight tracking-[-0.03em] text-[var(--color-text)]">
-            Good evening, <span className="text-[var(--color-primary)]">{firstName}.</span>
+            {greetingText}, <span className="text-[var(--color-primary)]">{firstName === "Visitor" ? "Visitor" : firstName + "."}</span>
           </h1>
           <p className="max-w-[320px] text-[13px] leading-relaxed text-[var(--color-text-muted)]">
             Here&apos;s your curated feed of what&apos;s happening around campus this week.
@@ -306,9 +311,6 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4">
-                  <span className="mb-2 inline-flex rounded-full bg-[#dfe1fc] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#171a2e]">
-                    University Fest
-                  </span>
                   <h3 className="text-[20px] font-extrabold leading-tight text-white">
                     {festSpotlight.fest || festSpotlight.title}
                   </h3>

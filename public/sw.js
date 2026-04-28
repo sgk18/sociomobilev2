@@ -6,10 +6,10 @@
    • Cache-first for images / fonts / CSS
    ────────────────────────────────────────────────────────── */
 
-const CACHE_STATIC = "socio-static-v4";   // Next.js chunks, fonts, CSS
-const CACHE_PAGES = "socio-pages-v4";     // HTML navigations
-const CACHE_IMAGES = "socio-images-v4";   // images
-const CACHE_API = "socio-api-v4";         // API data (stale-while-revalidate)
+const CACHE_STATIC = "socio-static-v5";   // Next.js chunks, fonts, CSS
+const CACHE_PAGES = "socio-pages-v5";     // HTML navigations
+const CACHE_IMAGES = "socio-images-v5";   // images
+const CACHE_API = "socio-api-v5";         // API data (stale-while-revalidate)
 const OFFLINE_URL = "/offline";
 
 const ALL_CACHES = [CACHE_STATIC, CACHE_PAGES, CACHE_IMAGES, CACHE_API];
@@ -164,32 +164,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  /* 4. Navigation */
+  /* 4. Navigation — network-first to avoid stale HTML hydration mismatches */
   if (isNavigation(request)) {
-    // For known app routes, prefer cached shell first and refresh in background.
-    if (isSameOrigin(url) && isCoreRoutePath(parsed.pathname)) {
-      event.respondWith(
-        caches.open(CACHE_PAGES).then((cache) =>
-          cache.match(request).then((cached) => {
-            const networkFetch = fetch(request)
-              .then((res) => {
-                if (res.ok) cache.put(request, res.clone());
-                return res;
-              })
-              .catch(() => cached || caches.match(OFFLINE_URL));
-
-            if (cached) {
-              event.waitUntil(networkFetch);
-              return cached;
-            }
-            return networkFetch;
-          })
-        )
-      );
-      return;
-    }
-
-    // For other navigations, keep network-first with cache/offline fallback.
     event.respondWith(
       fetch(request)
         .then((res) => {

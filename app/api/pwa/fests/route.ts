@@ -9,10 +9,13 @@ export async function GET(request: NextRequest) {
   const cacheControl = authHeader
     ? "private, max-age=120, stale-while-revalidate=600"
     : "public, max-age=300, stale-while-revalidate=86400";
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 7000);
 
   try {
     const res = await fetch(`${API_URL}/api/fests`, {
       headers: authHeader ? { Authorization: authHeader } : undefined,
+      signal: controller.signal,
       next: { revalidate: 300 },
     });
 
@@ -25,6 +28,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch fests", fests: [] }, { status: 502 });
+    return NextResponse.json({ error: "Failed to fetch fests", fests: [] }, { status: 504 });
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
