@@ -16,10 +16,15 @@ export default function TopBar() {
   const pathname = usePathname();
 
   const showBack = BACK_PAGES.some((p) => pathname.startsWith(p));
+  const isProfile = pathname === "/profile";
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 glass border-b border-[var(--color-border)] will-change-none"
+      className={`fixed top-0 left-0 right-0 z-50 will-change-none border-b transition-colors duration-200 ${
+        isProfile
+          ? "bg-[var(--color-primary-dark)] border-transparent text-white"
+          : "glass border-[var(--color-border)] text-[var(--color-text)]"
+      }`}
       style={{ paddingTop: "var(--safe-top)", backfaceVisibility: "hidden" }}
     >
       <div
@@ -60,7 +65,9 @@ export default function TopBar() {
         {!showBack && (
           <Link
             href="/"
-            className="absolute left-1/2 -translate-x-1/2 text-[17px] font-black tracking-tight text-[var(--color-primary)]"
+            className={`absolute left-1/2 -translate-x-1/2 text-[17px] font-black tracking-tight ${
+              isProfile ? "text-white" : "text-[var(--color-primary)]"
+            }`}
             aria-label="Go to home"
           >
             SOCIO

@@ -59,6 +59,7 @@ export default function ProfilePage() {
   const [activeQR, setActiveQR] = useState<{ registrationId: string; eventTitle: string } | null>(null);
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const formatDate = (rawDate?: string) => {
     if (!rawDate) return "Date TBA";
@@ -381,15 +382,67 @@ export default function ProfilePage() {
 
       {/* Registered events — deduplicated + compact */}
       <div className="px-4 mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Ticket size={15} className="text-[var(--color-primary)]" />
-          <h2 className="text-[15px] font-extrabold">Registered Events</h2>
-          {uniqueRegistrations.length > 0 && (
-            <span className="ml-auto text-[11px] font-bold text-[var(--color-text-muted)] bg-gray-100 px-2 py-0.5 rounded-full">
-              {uniqueRegistrations.length}
-            </span>
-          )}
-        </div>
+        {!isSearchOpen ? (
+          <div className="flex items-center gap-2 mb-3 animate-fade-in">
+            <Ticket size={15} className="text-[var(--color-primary)] shrink-0" />
+            <h2 className="text-[15px] font-extrabold">Registered Events</h2>
+            
+            {(uniqueRegistrations.length > 0 || searchQuery) && (
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="ml-auto w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
+                aria-label="Search registrations"
+              >
+                <SearchIcon size={16} />
+              </button>
+            )}
+
+            {uniqueRegistrations.length > 0 && (
+              <span className={`text-[11px] font-bold text-[var(--color-text-muted)] bg-gray-100 px-2 py-0.5 rounded-full ${uniqueRegistrations.length === 0 && !searchQuery ? "ml-auto" : ""}`}>
+                {uniqueRegistrations.length}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 mb-3 animate-fade-in">
+            <div className="relative flex-1">
+              <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search registered events..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-white text-[13px] border border-[var(--color-border)] rounded-xl py-2 pl-9 pr-8 focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-transparent outline-none shadow-sm transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCurrentPage(1);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] p-1 rounded-full bg-gray-100"
+                >
+                  <XIcon size={12} />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                setIsSearchOpen(false);
+                setSearchQuery("");
+                setCurrentPage(1);
+              }}
+              className="text-[13px] font-bold text-[var(--color-primary)] px-2 shrink-0"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         {regLoading ? (
           <div className="space-y-2">
             <Skeleton className="h-20 w-full rounded-[var(--radius)]" count={2} />
@@ -404,44 +457,14 @@ export default function ProfilePage() {
               Browse events and register to see them here
             </p>
           </div>
+        ) : filteredRegistrations.length === 0 ? (
+          <div className="card p-6 text-center">
+            <p className="text-[13px] font-semibold text-[var(--color-text-muted)]">
+              No matching events found
+            </p>
+          </div>
         ) : (
-          <>
-            {/* Search Input */}
-            {(uniqueRegistrations.length > 0 || searchQuery) && (
-              <div className="relative mb-3">
-                <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search registered events..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="w-full bg-white text-[13px] border border-[var(--color-border)] rounded-xl py-2 pl-9 pr-8 focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-transparent outline-none shadow-sm transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery("");
-                      setCurrentPage(1);
-                    }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] p-1 rounded-full bg-gray-100"
-                  >
-                    <XIcon size={12} />
-                  </button>
-                )}
-              </div>
-            )}
-
-            {filteredRegistrations.length === 0 ? (
-               <div className="card p-6 text-center">
-                 <p className="text-[13px] font-semibold text-[var(--color-text-muted)]">
-                   No matching events found
-                 </p>
-               </div>
-            ) : (
-              <div className="space-y-2 stagger">
+          <div className="space-y-2 stagger">
                 {paginatedRegistrations.map((r) => {
               const isUpcoming = r.status !== "completed";
               const tooLateToCancel = isEventSoon(r.raw_date);
