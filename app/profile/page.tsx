@@ -286,7 +286,6 @@ export default function ProfilePage() {
         {/* Cover background */}
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[#3b5bdb]">
           {/* Decorative subtle glows */}
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 -left-10 w-48 h-48 bg-black/20 rounded-full blur-2xl" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a1835]/80 via-transparent to-transparent" />
         </div>
