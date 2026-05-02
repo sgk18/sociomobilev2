@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     });
 
     const bodyText = await res.text();
+    console.log(`GET /api/users/me Auth: ${authHeader.substring(0, 20)}... Status: ${res.status} Body: ${bodyText}`);
     return new NextResponse(bodyText, {
       status: res.status,
       headers: {
