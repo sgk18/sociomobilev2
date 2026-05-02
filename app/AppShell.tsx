@@ -14,6 +14,7 @@ import ChatbotFab from "@/components/ChatbotFab";
 import CampusSelector, { isCampusDismissedRecently } from "@/components/CampusSelector";
 import PageTransition from "@/components/PageTransition";
 import { useAuth } from "@/context/AuthContext";
+import ShakeToScanListener from "@/components/ShakeToScanListener";
 
 const NO_BOTTOM_NAV = ["/auth", "/auth/callback", "/offline"];
 const NO_TOP_BAR = ["/auth/callback", "/offline"];
@@ -56,6 +57,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {!hideBottom && <InstallPrompt />}
       {!hideBottom && <ChatbotFab />}
       {!hideBottom && userData && <BrowserNotificationPrompt />}
+      <ShakeToScanListener />
       {needsCampus && !campusDismissed && userData && (
         <CampusSelector
           email={userData.email}

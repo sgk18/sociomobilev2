@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import { EventProvider } from "@/context/EventContext";
 import { NotificationProvider } from "@/context/NotificationContext";
+import { ShakeToScanProvider } from "@/context/ShakeToScanContext";
 import type { FetchedEvent } from "@/context/EventContext";
 import AppShell from "./AppShell";
 
@@ -121,7 +122,9 @@ export default async function RootLayout({
         <AuthProvider>
           <EventProvider initialEvents={events}>
             <NotificationProvider>
-              <AppShell>{children}</AppShell>
+              <ShakeToScanProvider>
+                <AppShell>{children}</AppShell>
+              </ShakeToScanProvider>
             </NotificationProvider>
           </EventProvider>
         </AuthProvider>

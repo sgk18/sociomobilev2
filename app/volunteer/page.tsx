@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth, type VolunteerEvent } from "@/context/AuthContext";
+import { useShakeToScan } from "@/context/ShakeToScanContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Button } from "@/components/Button";
 import {
@@ -22,20 +23,57 @@ const DENIED_MESSAGE = "You do not have permission to access this feature";
 export default function VolunteerDashboardPage() {
   const router = useRouter();
   const { session, userData, isLoading } = useAuth();
+  const {
+    activeScanEvent,
+    shakeEnabled,
+    enableForEvent,
+    disableShake,
+    requestMotionPermission,
+    motionSupported,
+    motionPermission,
+  } = useShakeToScan();
   const [events, setEvents] = useState<VolunteerEvent[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shakeError, setShakeError] = useState<string | null>(null);
 
   const cachedActiveEvents = useMemo(
     () => getActiveVolunteerEvents(userData?.volunteerEvents),
     [userData?.volunteerEvents]
   );
 
+  const activeShakeEvent = useMemo(() => {
+    const source = events.length > 0 ? events : cachedActiveEvents;
+    return source.find((item) => item.event_id === activeScanEvent) || null;
+  }, [activeScanEvent, cachedActiveEvents, events]);
+
   useEffect(() => {
     if (!isLoading && !session) {
       router.replace("/auth");
     }
   }, [isLoading, router, session]);
+
+  const handleToggleShake = async (eventId: string) => {
+    setShakeError(null);
+
+    if (shakeEnabled && activeScanEvent === eventId) {
+      disableShake();
+      return;
+    }
+
+    if (!motionSupported) {
+      setShakeError("Motion sensors are not available on this device.");
+      return;
+    }
+
+    const granted = await requestMotionPermission();
+    if (!granted) {
+      setShakeError("Motion permission is required to enable shake to scan.");
+      return;
+    }
+
+    enableForEvent(eventId);
+  };
 
   useEffect(() => {
     if (isLoading) return;
@@ -132,6 +170,39 @@ export default function VolunteerDashboardPage() {
               </span>
             </div>
 
+            <section className="card p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-[14px] font-extrabold text-[var(--color-text)]">Shake to Scan</h3>
+                  {shakeEnabled && activeScanEvent && activeShakeEvent ? (
+                    <p className="mt-1 text-[12px] font-semibold text-emerald-700">
+                      Shake to Scan Enabled for {activeShakeEvent.title}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-[12px] text-[var(--color-text-muted)]">
+                      Enable a single event for quick scanner access.
+                    </p>
+                  )}
+                </div>
+                {shakeEnabled && activeScanEvent ? (
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    setShakeError(null);
+                    disableShake();
+                  }}>
+                    Disable
+                  </Button>
+                ) : null}
+              </div>
+              {motionSupported && motionPermission === "denied" && (
+                <p className="mt-2 text-[11px] font-semibold text-red-600">
+                  Motion access is blocked. Enable motion permissions in your browser settings.
+                </p>
+              )}
+              {shakeError && (
+                <p className="mt-2 text-[11px] font-semibold text-red-600">{shakeError}</p>
+              )}
+            </section>
+
             {events.map((event) => (
               <Link
                 key={event.event_id}
@@ -164,6 +235,40 @@ export default function VolunteerDashboardPage() {
                     </div>
                   </div>
                   <ArrowRightIcon size={18} className="mt-1 text-[var(--color-text-light)]" />
+                </div>
+                <div className="mt-4 flex items-center justify-between rounded-2xl border border-[var(--color-border)] bg-white/80 px-3 py-2">
+                  <div>
+                    <p className="text-[12px] font-semibold text-[var(--color-text)]">Shake to Scan</p>
+                    <p className="text-[11px] text-[var(--color-text-muted)]">
+                      {shakeEnabled && activeScanEvent === event.event_id
+                        ? "Enabled"
+                        : shakeEnabled && activeScanEvent
+                          ? "Switch to this event"
+                          : "Enable for this event"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Toggle Shake to Scan"
+                    title="Toggle Shake to Scan"
+                    onClick={(eventClick) => {
+                      eventClick.preventDefault();
+                      eventClick.stopPropagation();
+                      void handleToggleShake(event.event_id);
+                    }}
+                    className={`relative h-7 w-12 rounded-full transition-colors ${
+                      shakeEnabled && activeScanEvent === event.event_id
+                        ? "bg-emerald-500"
+                        : "bg-slate-200"
+                    }`}
+                  >
+                    <span className="sr-only">Toggle Shake to Scan</span>
+                    <span
+                      className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                        shakeEnabled && activeScanEvent === event.event_id ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
                 </div>
               </Link>
             ))}
