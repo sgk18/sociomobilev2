@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowRight, Globe, HelpCircle, Loader2, School, WifiOff } from "lucide-react";
+import { AlertCircleIcon, ArrowRightIcon, GlobeIcon, HelpCircleIcon, Loader2Icon, SchoolIcon, WifiOffIcon } from "@/components/icons";
 import { useAuth } from "@/context/AuthContext";
 
 function GoogleMark() {
@@ -102,8 +102,8 @@ export default function AuthPage() {
       <main className="relative mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-6 pt-[calc(var(--nav-height)+var(--safe-top)+32px)] pb-24">
         <section className="flex flex-1 flex-col justify-center gap-10">
           <header className="flex flex-col items-center text-center">
-            <div className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-[var(--color-primary)] shadow-[0_14px_40px_rgba(21,76,179,0.18)]">
-              <School className="h-9 w-9 text-white" strokeWidth={2.2} />
+            <div className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-[var(--color-primary)] shadow-[0_14px_40px_rgba(1,31,123,0.18)]">
+              <SchoolIcon className="h-9 w-9 text-white" strokeWidth={2.2} />
             </div>
             <div className="mt-5 space-y-2">
               <Image
@@ -121,7 +121,7 @@ export default function AuthPage() {
           </header>
 
           <section>
-            <div className="rounded-[28px] border border-white bg-white/92 p-8 shadow-[0_10px_40px_rgba(21,76,179,0.08)] backdrop-blur-sm">
+              <div className="rounded-[28px] border border-white bg-white/92 p-8 shadow-[0_10px_40px_rgba(1,31,123,0.08)] backdrop-blur-sm">
               <div className="mb-8">
                 <h1 className="text-2xl font-extrabold tracking-tight text-[var(--color-primary-dark)]">
                   Welcome
@@ -136,11 +136,11 @@ export default function AuthPage() {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isSubmitting || isLoading || isOffline}
-                  className="flex h-[52px] w-full items-center justify-center gap-3 rounded-xl bg-[var(--color-primary)] px-4 font-bold text-white shadow-[0_10px_24px_rgba(21,76,179,0.16)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex h-[52px] w-full items-center justify-center gap-3 rounded-xl bg-[var(--color-primary)] px-4 font-bold text-white shadow-[0_10px_24px_rgba(1,31,123,0.16)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting || isLoading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2Icon className="h-5 w-5 animate-spin" />
                       <span>Authenticating...</span>
                     </>
                   ) : (
@@ -159,7 +159,7 @@ export default function AuthPage() {
               {authError && (
                 <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
                   <div className="flex items-start gap-3 text-red-700">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <AlertCircleIcon className="mt-0.5 h-4 w-4 shrink-0" />
                     <p className="text-xs font-semibold leading-relaxed">{authError}</p>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export default function AuthPage() {
               {isOffline && (
                 <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[var(--color-bg)] px-4 py-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-border)] text-[var(--color-text-muted)]">
-                    <WifiOff className="h-5 w-5" />
+                    <WifiOffIcon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold">You&apos;re offline</p>
@@ -199,7 +199,7 @@ export default function AuthPage() {
             <div className="rounded-2xl border border-white bg-white/70 p-4 shadow-sm backdrop-blur-sm">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRightIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-sm font-bold text-[var(--color-primary-dark)]">Fast sign-in</h2>
@@ -213,7 +213,7 @@ export default function AuthPage() {
             <div className="rounded-2xl border border-[var(--color-border)] bg-white/60 p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-bg)] text-[var(--color-text-muted)]">
-                  <HelpCircle className="h-5 w-5" />
+                  <HelpCircleIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold">Need help signing in?</p>

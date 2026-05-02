@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Smartphone } from "lucide-react";
+import { SmartphoneIcon } from "@/components/icons";
 
 /**
  * Full-screen overlay shown when a mobile device is held in landscape orientation.
@@ -36,7 +36,7 @@ export default function OrientationGate() {
       <div className="animate-bounce-in mb-6">
         {/* Animate the icon to suggest rotating the phone */}
         <div className="animate-[spin_3s_ease-in-out_infinite]">
-          <Smartphone size={80} strokeWidth={1} />
+          <SmartphoneIcon size={80} strokeWidth={1} />
         </div>
       </div>
 

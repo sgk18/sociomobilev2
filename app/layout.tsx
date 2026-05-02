@@ -25,7 +25,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#154CB3",
+  themeColor: "#011F7B",
 };
 
 async function fetchEvents(): Promise<FetchedEvent[]> {

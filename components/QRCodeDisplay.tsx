@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X, AlertCircle, Loader2 } from "lucide-react";
+import { DownloadIcon, XIcon, AlertCircleIcon, Loader2Icon } from "@/components/icons";
 import { useAuth } from "@/context/AuthContext";
 
 interface QRCodeDisplayProps {
@@ -74,19 +74,19 @@ export default function QRCodeDisplay({
         <div className="bg-gradient-to-r from-[var(--color-primary-dark)] to-[var(--color-primary)] px-4 py-3 text-white flex items-center justify-between">
           <h3 className="text-[15px] font-bold">Event Ticket</h3>
           <button onClick={onClose} className="p-1 rounded-full bg-white/10" aria-label="Close QR">
-            <X size={16} />
+            <XIcon size={16} />
           </button>
         </div>
 
         <div className="p-4 text-center">
           {loading ? (
             <div className="py-6 text-[var(--color-text-muted)]">
-              <Loader2 size={24} className="mx-auto mb-2 animate-spin" />
+              <Loader2Icon size={24} className="mx-auto mb-2 animate-spin" />
               <p className="text-[13px]">Generating QR code...</p>
             </div>
           ) : error ? (
             <div className="py-3">
-              <AlertCircle size={24} className="mx-auto mb-2 text-[var(--color-danger)]" />
+              <AlertCircleIcon size={24} className="mx-auto mb-2 text-[var(--color-danger)]" />
               <p className="text-[13px] text-[var(--color-danger)]">{error}</p>
             </div>
           ) : (
@@ -105,7 +105,7 @@ export default function QRCodeDisplay({
               </p>
 
               <button onClick={downloadQRCode} className="btn btn-primary w-full mt-4 text-[13px]">
-                <Download size={14} /> Download QR
+                <DownloadIcon size={14} /> Download QR
               </button>
             </>
           )}

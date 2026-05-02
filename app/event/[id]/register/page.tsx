@@ -5,19 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEvents, type FetchedEvent } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
-import {
-  ArrowLeft,
-  Plus,
-  Minus,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  User,
-  Hash,
-  Mail,
-  Users,
-  MessageCircle,
-} from "lucide-react";
+import { ArrowLeftIcon, CheckCircleIcon, AlertCircleIcon, Loader2Icon, UserIcon, HashIcon, MailIcon, UsersIcon, MessageCircleIcon } from "@/components/icons";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -225,7 +213,7 @@ export default function RegisterPage() {
   if (loading || ctxLoading || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+        <Loader2Icon className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
       </div>
     );
   }
@@ -242,7 +230,7 @@ export default function RegisterPage() {
   if (!event) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 px-6 text-center">
-        <AlertCircle size={40} className="text-red-400" />
+        <AlertCircleIcon size={40} className="text-red-400" />
         <p className="font-bold">Event not found</p>
         <Link href="/discover" className="btn btn-primary text-sm mt-2">Back</Link>
       </div>
@@ -255,7 +243,7 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center min-h-[70vh] px-6">
         <div className="card p-6 text-center max-w-sm w-full animate-scale-in">
           <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 size={32} className="text-emerald-600" />
+            <CheckCircleIcon size={32} className="text-emerald-600" />
           </div>
           <h2 className="text-xl font-bold mb-1">You&apos;re in!</h2>
           <p className="text-sm text-[var(--color-text-muted)] mb-5">
@@ -272,7 +260,7 @@ export default function RegisterPage() {
                 rel="noopener noreferrer"
                 className="btn btn-ghost text-sm w-full text-green-600 border-green-300"
               >
-                <MessageCircle size={16} /> Join WhatsApp
+                <MessageCircleIcon size={16} /> Join WhatsApp
               </a>
             )}
           </div>
@@ -285,7 +273,7 @@ export default function RegisterPage() {
   const FieldError = ({ msg }: { msg?: string }) =>
     msg ? (
       <p className="text-xs text-red-500 mt-0.5 flex items-center gap-1">
-        <AlertCircle size={11} /> {msg}
+        <AlertCircleIcon size={11} /> {msg}
       </p>
     ) : null;
 
@@ -297,7 +285,7 @@ export default function RegisterPage() {
           onClick={() => router.back()}
           className="flex items-center gap-1 text-sm text-[var(--color-accent)] mb-3"
         >
-          <ArrowLeft size={16} /> Back
+          <ArrowLeftIcon size={16} /> Back
         </button>
         <h1 className="text-lg font-bold">{event.title}</h1>
         <p className="text-xs opacity-70 mt-0.5">
@@ -308,7 +296,7 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="px-4 mt-4 space-y-4">
         {alreadyRegistered && (
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 flex items-start gap-2">
-            <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+            <CheckCircleIcon size={16} className="shrink-0 mt-0.5" />
             <span>You are already registered for this event.</span>
           </div>
         )}
@@ -317,7 +305,7 @@ export default function RegisterPage() {
         {isTeam && (
           <div>
             <label className="text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
-              <Users size={12} className="inline mr-1" /> Team Name
+              <svg size={12} className="inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Team Name
             </label>
             <input
               className={`input ${errors["teamName"] ? "input-error" : ""}`}
@@ -353,7 +341,7 @@ export default function RegisterPage() {
             {/* Name */}
             <div>
               <label className="text-xs text-[var(--color-text-muted)] mb-0.5 block">
-                <User size={11} className="inline mr-1" /> Name
+                <UserIcon size={11} className="inline mr-1" /> Name
               </label>
               <input
                 className={`input text-sm ${errors[`${i}.name`] ? "input-error" : ""}`}
@@ -368,7 +356,7 @@ export default function RegisterPage() {
             {/* Register number */}
             <div>
               <label className="text-xs text-[var(--color-text-muted)] mb-0.5 block">
-                <Hash size={11} className="inline mr-1" /> Register Number
+                <HashIcon size={11} className="inline mr-1" /> Register Number
               </label>
               <input
                 className={`input text-sm ${errors[`${i}.registerNumber`] ? "input-error" : ""}`}
@@ -383,7 +371,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div>
               <label className="text-xs text-[var(--color-text-muted)] mb-0.5 block">
-                <Mail size={11} className="inline mr-1" /> Email
+                <MailIcon size={11} className="inline mr-1" /> Email
               </label>
               <input
                 type="email"
@@ -401,7 +389,7 @@ export default function RegisterPage() {
         {/* Error */}
         {(regError || isOutsiderRestricted) && (
           <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 flex items-start gap-2">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <AlertCircleIcon size={16} className="shrink-0 mt-0.5" />
             <span>{isOutsiderRestricted ? "This event is only for Christ University members. External participants cannot register." : regError}</span>
           </div>
         )}
@@ -413,14 +401,14 @@ export default function RegisterPage() {
           className={`btn w-full text-sm ${isOutsiderRestricted ? "bg-red-100 text-red-700" : "btn-primary"}`}
         >
           {submitting ? (
-            <Loader2 size={18} className="animate-spin" />
+            <Loader2Icon size={18} className="animate-spin" />
           ) : alreadyRegistered ? (
             <>
-              <CheckCircle2 size={16} /> Registered
+              <CheckCircleIcon size={16} /> Registered
             </>
           ) : (
             <>
-              <CheckCircle2 size={16} /> Confirm Registration
+              <CheckCircleIcon size={16} /> Confirm Registration
             </>
           )}
         </button>

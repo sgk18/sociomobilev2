@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents, type FetchedEvent } from "@/context/EventContext";
-import { CalendarDays, Bell, Compass, ArrowRight, MapPin, Clock3, Flame, Ticket } from "lucide-react";
+import { CalendarDaysIcon, BellIcon, CompassIcon, ArrowRightIcon, MapPinIcon, Clock3Icon, FlameIcon, TicketIcon } from "@/components/icons";
 import { formatDateShort, formatTime, isDeadlinePassed } from "@/lib/dateUtils";
 
 function getEventDateValue(event: FetchedEvent) {
@@ -23,7 +23,7 @@ function getEventImage(event: FetchedEvent) {
   return (
     event.banner_url ||
     event.event_image_url ||
-    "https://placehold.co/1200x800/e8effa/154CB3?text=SOCIO"
+    "https://placehold.co/1200x800/E6ECF8/011F7B?text=SOCIO"
   );
 }
 
@@ -32,25 +32,25 @@ function getQuickActions(notificationCount: number) {
     {
       href: "/discover",
       label: "Discover",
-      icon: Compass,
+      icon: CompassIcon,
       tone: "bg-[var(--color-primary-light)] text-[var(--color-primary)]",
     },
     {
       href: "/profile",
       label: "Registrations",
-      icon: Ticket,
-      tone: "bg-[#eef0ff] text-[#4b5ab8]",
+      icon: TicketIcon,
+      tone: "bg-[var(--color-primary-light)] text-[var(--color-primary)]",
     },
     {
       href: "/fests",
       label: "University\nFests",
-      icon: Flame,
+      icon: FlameIcon,
       tone: "bg-[#fff4cf] text-[#745b00]",
     },
     {
       href: "/notifications",
       label: "Updates",
-      icon: Bell,
+      icon: BellIcon,
       tone: "bg-[#fde8e8] text-[#ba1a1a]",
       badge: notificationCount > 0 ? notificationCount : undefined,
     },
@@ -66,7 +66,7 @@ function UpcomingEventItem({ event }: { event: FetchedEvent }) {
   return (
     <Link
       href={`/event/${event.event_id}`}
-      className="group flex items-center gap-3 rounded-[18px] border border-white bg-white/82 px-3 py-3 shadow-[0_6px_18px_rgba(21,76,179,0.06)] backdrop-blur-sm transition-all hover:shadow-[0_10px_28px_rgba(21,76,179,0.12)] active:scale-[0.99]"
+    className="group flex items-center gap-3 rounded-[18px] border border-white bg-white/82 px-3 py-3 shadow-[0_6px_18px_rgba(1,31,123,0.06)] backdrop-blur-sm transition-all hover:shadow-[0_10px_28px_rgba(1,31,123,0.12)] active:scale-[0.99]"
     >
       <div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-[16px] bg-[var(--color-primary-light)]">
         <Image
@@ -92,24 +92,24 @@ function UpcomingEventItem({ event }: { event: FetchedEvent }) {
                 {statusLabel}
               </span>
             )}
-            <ArrowRight size={14} className="mt-0.5 text-[var(--color-text-light)]" />
+            <ArrowRightIcon size={14} className="mt-0.5 text-[var(--color-text-light)]" />
           </div>
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--color-text-muted)]">
           <span className="flex items-center gap-1">
-            <CalendarDays size={11} className="text-[var(--color-primary)]" />
+            <CalendarDaysIcon size={11} className="text-[var(--color-primary)]" />
             {formatDateShort(event.event_date)}
           </span>
           {event.event_time && (
             <span className="flex items-center gap-1">
-              <Clock3 size={11} className="text-[var(--color-primary)]" />
+              <Clock3Icon size={11} className="text-[var(--color-primary)]" />
               {formatTime(event.event_time)}
             </span>
           )}
           {event.venue && (
             <span className="flex items-center gap-1 truncate">
-              <MapPin size={11} className="text-[var(--color-primary)]" />
+              <MapPinIcon size={11} className="text-[var(--color-primary)]" />
               {event.venue}
             </span>
           )}
@@ -177,7 +177,7 @@ export default function HomePage() {
         className="pointer-events-none absolute inset-0 opacity-[0.18]"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 10% 20%, rgba(21,76,179,0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(116,91,0,0.05) 0%, transparent 40%), repeating-linear-gradient(0deg, transparent, transparent 23px, rgba(0,0,0,0.02) 24px), repeating-linear-gradient(90deg, transparent, transparent 23px, rgba(0,0,0,0.02) 24px)",
+            "radial-gradient(circle at 10% 20%, rgba(1,31,123,0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(116,91,0,0.05) 0%, transparent 40%), repeating-linear-gradient(0deg, transparent, transparent 23px, rgba(0,0,0,0.02) 24px), repeating-linear-gradient(90deg, transparent, transparent 23px, rgba(0,0,0,0.02) 24px)",
         }}
       />
       <div className="pointer-events-none absolute -top-10 right-[-60px] h-60 w-60 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
@@ -198,7 +198,7 @@ export default function HomePage() {
           <section>
             <Link
               href={`/event/${featuredEvent.event_id}`}
-              className="group relative block h-56 overflow-hidden rounded-[22px] shadow-[0_10px_30px_rgba(21,76,179,0.14)]"
+              className="group relative block h-56 overflow-hidden rounded-[22px] shadow-[0_10px_30px_rgba(1,31,123,0.14)]"
             >
               <Image
                 src={getEventImage(featuredEvent)}
@@ -208,7 +208,7 @@ export default function HomePage() {
                 sizes="(max-width: 480px) 100vw, 420px"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(6,49,104,0.92)] via-[rgba(21,76,179,0.35)] to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,13,59,0.92)] via-[rgba(1,31,123,0.35)] to-transparent" />
               <div className="absolute inset-x-0 bottom-0 h-40 backdrop-blur-md [mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.12)_18%,rgba(0,0,0,0.72)_48%,black_100%)]" />
               <div className="absolute inset-x-0 bottom-0 p-4">
                 <div className="flex items-end justify-between gap-4">
@@ -221,12 +221,12 @@ export default function HomePage() {
                     </h2>
                     <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-white/82">
                       <span className="flex items-center gap-1">
-                        <CalendarDays size={13} />
+                        <CalendarDaysIcon size={13} />
                         {formatDateShort(featuredEvent.event_date)}
                       </span>
                       {featuredEvent.venue && (
                         <span className="flex items-center gap-1">
-                          <MapPin size={13} />
+                          <MapPinIcon size={13} />
                           {featuredEvent.venue}
                         </span>
                       )}
@@ -275,7 +275,7 @@ export default function HomePage() {
                 Upcoming Events
               </h2>
               <Link href="/events" className="flex items-center gap-1 text-[12px] font-bold text-[var(--color-primary)]">
-                See all <ArrowRight size={13} />
+                See all <ArrowRightIcon size={13} />
               </Link>
             </div>
             <div className="space-y-3">
@@ -293,13 +293,13 @@ export default function HomePage() {
                 Fest Spotlight
               </h2>
               <Link href="/fests" className="flex items-center gap-1 text-[12px] font-bold text-[var(--color-primary)]">
-                See Fest <ArrowRight size={13} />
+                See Fest <ArrowRightIcon size={13} />
               </Link>
             </div>
 
             <Link
               href={festSpotlight.fest ? "/fests" : `/event/${festSpotlight.event_id}`}
-              className="group relative block overflow-hidden rounded-[22px] border border-white bg-white/85 shadow-[0_8px_24px_rgba(21,76,179,0.08)] backdrop-blur-sm"
+              className="group relative block overflow-hidden rounded-[22px] border border-white bg-white/85 shadow-[0_8px_24px_rgba(1,31,123,0.08)] backdrop-blur-sm"
             >
               <div className="relative h-40">
                 <Image
@@ -324,9 +324,9 @@ export default function HomePage() {
         )}
 
         {allEvents.length === 0 && (
-          <section className="rounded-[22px] border border-white bg-white/85 px-5 py-8 text-center shadow-[0_8px_24px_rgba(21,76,179,0.06)]">
+          <section className="rounded-[22px] border border-white bg-white/85 px-5 py-8 text-center shadow-[0_8px_24px_rgba(1,31,123,0.06)]">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-primary-light)]">
-              <CalendarDays className="h-7 w-7 text-[var(--color-primary)]" />
+              <CalendarDaysIcon className="h-7 w-7 text-[var(--color-primary)]" />
             </div>
             <h2 className="text-[18px] font-extrabold text-[var(--color-text)]">No events yet</h2>
             <p className="mt-1 text-[13px] text-[var(--color-text-muted)]">

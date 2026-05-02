@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, CalendarDays, Flame } from "lucide-react";
+import { HomeIcon, CompassIcon, CalendarDaysIcon, FlameIcon } from "@/components/icons";
 
 const tabs = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/discover", icon: Compass, label: "Discover" },
-  { href: "/events", icon: CalendarDays, label: "Events" },
-  { href: "/fests", icon: Flame, label: "Fests" },
+  { href: "/", icon: HomeIcon, label: "Home" },
+  { href: "/discover", icon: CompassIcon, label: "Discover" },
+  { href: "/events", icon: CalendarDaysIcon, label: "Events" },
+  { href: "/fests", icon: FlameIcon, label: "Fests" },
 ] as const;
 
 export default function BottomNav() {

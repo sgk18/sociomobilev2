@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, ArrowRight, Smartphone } from "lucide-react";
+import { MonitorIcon, ArrowRightIcon, SmartphoneIcon } from "@/components/icons";
 
 /**
  * Full-screen overlay shown on viewports ≥ 768 px.
@@ -10,7 +10,7 @@ export default function DesktopGate() {
   return (
     <div className="desktop-gate" aria-label="Desktop redirect notice">
       <div className="animate-bounce-in">
-        <Monitor size={64} strokeWidth={1.4} />
+        <MonitorIcon size={64} strokeWidth={1.4} />
       </div>
 
       <h1 className="text-2xl font-extrabold leading-tight animate-fade-up">
@@ -29,14 +29,14 @@ export default function DesktopGate() {
         className="btn btn-accent mt-2 animate-fade-up"
         style={{ animationDelay: "160ms" }}
       >
-        socio.christuniversity.in <ArrowRight size={16} />
+        socio.christuniversity.in <ArrowRightIcon size={16} />
       </a>
 
       <div
         className="flex items-center gap-2 text-xs opacity-60 mt-8 animate-fade-in"
         style={{ animationDelay: "300ms" }}
       >
-        <Smartphone size={14} /> Open on your phone for the best experience
+        <SmartphoneIcon size={14} /> Open on your phone for the best experience
       </div>
     </div>
   );

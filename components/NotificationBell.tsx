@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import { BellIcon } from "@/components/icons";
 import { useNotifications } from "@/context/NotificationContext";
 import { useRouter } from "next/navigation";
 
@@ -21,7 +21,7 @@ export default function NotificationBell() {
       aria-label="Notifications"
       type="button"
     >
-      <Bell size={22} strokeWidth={2} />
+      <BellIcon size={22} strokeWidth={2} />
       {unreadCount > 0 && (
         <span className="badge-count">{unreadCount > 99 ? "99+" : unreadCount}</span>
       )}
