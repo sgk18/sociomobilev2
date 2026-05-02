@@ -14,6 +14,7 @@ import type { Session, User } from "@supabase/supabase-js";
 
 /* ── Local-storage helpers for PWA session persistence ── */
 const LS_SESSION_KEY = "socio_pwa_session";
+const LS_USER_KEY = "socio_pwa_user_data";
 
 function persistSessionToLS(session: Session | null) {
   try {
@@ -37,6 +38,59 @@ function restoreSessionFromLS(): Session | null {
 }
 
 /* ── Types ── */
+function persistUserDataToLS(user: UserData | null) {
+  try {
+    if (user) {
+      localStorage.setItem(LS_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(LS_USER_KEY);
+    }
+  } catch {}
+}
+
+function restoreUserDataFromLS(): UserData | null {
+  try {
+    const raw = localStorage.getItem(LS_USER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as UserData;
+  } catch {
+    localStorage.removeItem(LS_USER_KEY);
+    return null;
+  }
+}
+
+export interface VolunteerAssignment {
+  register_number: string;
+  expires_at: string;
+  assigned_by: string;
+}
+
+export interface VolunteerEvent {
+  event_id: string;
+  title: string;
+  event_date: string;
+  event_time: string | null;
+  end_date: string | null;
+  end_time: string | null;
+  venue: string | null;
+  campus_hosted_at: string | null;
+  volunteer_assignment: VolunteerAssignment | null;
+}
+
+export interface UserRoles {
+  organiser?: boolean;
+  support?: boolean;
+  masteradmin?: boolean;
+  hod?: boolean;
+  dean?: boolean;
+  cfo?: boolean;
+  campus_director?: boolean;
+  accounts_office?: boolean;
+  it_support?: boolean;
+  venue_manager?: boolean;
+  stalls?: boolean;
+}
+
 export interface UserData {
   id: number | string;
   email: string;
@@ -53,6 +107,8 @@ export interface UserData {
   visitor_id: string | null;
   outsider_name_edit_used: boolean;
   created_at: string;
+  roles?: UserRoles;
+  volunteerEvents?: VolunteerEvent[];
 }
 
 interface AuthCtx {
@@ -141,13 +197,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /* Fetch profile from backend */
-  const fetchUserData = useCallback(async (email: string): Promise<UserData | null> => {
+  const fetchUserData = useCallback(async (email: string, accessToken?: string): Promise<UserData | null> => {
     try {
-      const res = await fetch(`/api/pwa/users/${encodeURIComponent(email)}`);
+      const headers: Record<string, string> = {};
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const res = await fetch(
+        accessToken ? "/api/pwa/users/me" : `/api/pwa/users/${encodeURIComponent(email)}`,
+        {
+          headers,
+          cache: "no-store",
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         const fetchedUser = data.user ?? data;
+        fetchedUser.volunteerEvents = Array.isArray(fetchedUser.volunteerEvents)
+          ? fetchedUser.volunteerEvents
+          : Array.isArray(data.volunteerEvents)
+            ? data.volunteerEvents
+            : [];
+        fetchedUser.roles = fetchedUser.roles ?? data.roles ?? {};
         setUserData(fetchedUser);
+        persistUserDataToLS(fetchedUser);
         return fetchedUser;
       }
     } catch (e) {
@@ -173,8 +245,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUserData = useCallback(async () => {
-    if (user?.email) await fetchUserData(user.email);
-  }, [user, fetchUserData]);
+    if (user?.email) await fetchUserData(user.email, session?.access_token);
+  }, [fetchUserData, session?.access_token, user?.email]);
 
   /* Create / update user on first login */
   const ensureUser = useCallback(
@@ -222,7 +294,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch {}
 
-      const fetchedUser = await fetchUserData(email);
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+      const fetchedUser = await fetchUserData(email, currentSession?.access_token);
       maybeShowOutsiderWelcome(fetchedUser, supaUser.id);
     },
     [fetchUserData, maybeShowOutsiderWelcome]
@@ -255,7 +330,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setShowOutsiderWarning(false);
         setIsEditingOutsiderName(false);
-        await fetchUserData(userData.email);
+        await fetchUserData(userData.email, session?.access_token);
       } catch {
         setOutsiderNameError(getFriendlyOutsiderNameError("Network error"));
       } finally {
@@ -270,6 +345,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     async function bootstrap() {
+      const cachedUser = restoreUserDataFromLS();
+      if (cachedUser && mounted) {
+        setUserData({
+          ...cachedUser,
+          volunteerEvents: Array.isArray(cachedUser.volunteerEvents) ? cachedUser.volunteerEvents : [],
+        });
+      }
+
       // 1. Try Supabase cookie-based session first
       const { data: { session: s } } = await supabase.auth.getSession();
 
@@ -307,6 +390,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 3. No valid session anywhere
       if (mounted) {
         persistSessionToLS(null);
+        persistUserDataToLS(null);
+        setUserData(null);
         setIsLoading(false);
       }
     }
@@ -325,6 +410,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (s?.user?.email) ensureUser(s.user);
       else {
         setUserData(null);
+        persistUserDataToLS(null);
         setIsLoading(false);
       }
     });
@@ -351,6 +437,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setUserData(null);
     persistSessionToLS(null);
+    persistUserDataToLS(null);
   }, []);
 
   /* Derived: show campus selector for christ members without campus */

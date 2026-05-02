@@ -184,6 +184,13 @@ export const QrCodeIcon = (props: IconProps) => (
   </IconBase>
 );
 
+export const CameraIcon = (props: IconProps) => (
+  <IconBase {...props}>
+    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+    <circle cx="12" cy="13" r="3" />
+  </IconBase>
+);
+
 export const CheckCircleIcon = (props: IconProps) => (
   <IconBase {...props}>
     <circle cx="12" cy="12" r="10" />
@@ -490,6 +497,13 @@ export const AlertTriangleIcon = (props: IconProps) => (
     <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
     <path d="M12 9v4" />
     <path d="M12 17h.01" />
+  </IconBase>
+);
+
+export const ShieldCheckIcon = (props: IconProps) => (
+  <IconBase {...props}>
+    <path d="M20 13c0 5-3.5 7.5-7.33 8.76a2 2 0 0 1-1.34 0C7.5 20.5 4 18 4 13V5.5a2 2 0 0 1 1.2-1.83l6-2.4a2 2 0 0 1 1.6 0l6 2.4A2 2 0 0 1 20 5.5V13Z" />
+    <path d="m9 12 2 2 4-4" />
   </IconBase>
 );
 

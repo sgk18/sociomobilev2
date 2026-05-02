@@ -32,6 +32,7 @@ import {
 } from "@/components/icons";
 import { Button } from "@/components/Button";
 import type { FetchedEvent } from "@/context/EventContext";
+import { getActiveVolunteerEvents } from "@/lib/volunteerAccess";
 
 interface Registration {
   event_id: string;
@@ -216,6 +217,10 @@ export default function ProfilePage() {
 
   const totalPages = Math.ceil(filteredRegistrations.length / ITEMS_PER_PAGE);
   const paginatedRegistrations = filteredRegistrations.slice(0, currentPage * ITEMS_PER_PAGE);
+  const activeVolunteerEvents = useMemo(
+    () => getActiveVolunteerEvents(userData?.volunteerEvents),
+    [userData?.volunteerEvents]
+  );
 
   const handleCancelRegistration = async (registration: Registration) => {
     if (!session?.access_token || cancellingId) return;
@@ -358,7 +363,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Quick links */}
-      <div className="px-4 -mt-5 relative z-10 flex gap-3 mb-4">
+      <div className="px-4 -mt-5 relative z-10 grid grid-cols-1 gap-3 mb-4">
         <button
           onClick={() => router.push("/notifications")}
           className="flex-1 card p-3 flex items-center gap-3"
@@ -371,6 +376,20 @@ export default function ProfilePage() {
           </div>
           <ChevronRight size={15} className="text-[var(--color-text-light)]" />
         </button>
+        {activeVolunteerEvents.length > 0 && (
+          <Link href="/volunteer" className="flex-1 card p-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
+              <QrCode size={17} className="text-[var(--color-primary)]" />
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-[13px] font-bold">Volunteer Dashboard</p>
+              <p className="text-[11px] text-[var(--color-text-muted)]">
+                {activeVolunteerEvents.length} active assignment{activeVolunteerEvents.length === 1 ? "" : "s"}
+              </p>
+            </div>
+            <ChevronRight size={15} className="text-[var(--color-text-light)]" />
+          </Link>
+        )}
       </div>
 
       {/* Detect Campus button for Christ members without campus */}

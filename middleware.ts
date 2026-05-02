@@ -8,7 +8,7 @@ const COOKIE_OPTIONS = {
   sameSite: "lax" as const,
 };
 
-const protectedRoutes = ["/profile"];
+const protectedRoutes = ["/profile", "/volunteer"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -59,5 +59,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/profile/:path*"],
+  matcher: ["/profile/:path*", "/volunteer/:path*"],
 };

@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents, type FetchedEvent } from "@/context/EventContext";
-import { CalendarDaysIcon, BellIcon, CompassIcon, ArrowRightIcon, MapPinIcon, Clock3Icon, FlameIcon, TicketIcon } from "@/components/icons";
+import { CalendarDaysIcon, BellIcon, CompassIcon, ArrowRightIcon, MapPinIcon, Clock3Icon, FlameIcon, TicketIcon, QrCodeIcon } from "@/components/icons";
 import { formatDateShort, formatTime, isDeadlinePassed } from "@/lib/dateUtils";
+import { getActiveVolunteerEvents } from "@/lib/volunteerAccess";
 
 function getEventDateValue(event: FetchedEvent) {
   return new Date(event.event_date || 0).getTime();
@@ -27,8 +28,8 @@ function getEventImage(event: FetchedEvent) {
   );
 }
 
-function getQuickActions(notificationCount: number) {
-  return [
+function getQuickActions(notificationCount: number, volunteerCount: number) {
+  const actions = [
     {
       href: "/discover",
       label: "Discover",
@@ -55,6 +56,18 @@ function getQuickActions(notificationCount: number) {
       badge: notificationCount > 0 ? notificationCount : undefined,
     },
   ];
+
+  if (volunteerCount > 0) {
+    actions.splice(2, 0, {
+      href: "/volunteer",
+      label: "Volunteer\nScanner",
+      icon: QrCodeIcon,
+      tone: "bg-[#e7f8ec] text-[#15803d]",
+      badge: volunteerCount,
+    });
+  }
+
+  return actions;
 }
 
 function UpcomingEventItem({ event }: { event: FetchedEvent }) {
@@ -155,9 +168,9 @@ export default function HomePage() {
 
   const isVisitor = userData?.organization_type === "outsider";
   const firstName = userData?.name?.split(" ")?.[0] || (isVisitor ? "Visitor" : "there");
-  const campusLabel = userData?.campus || "Engineering Campus";
   const notificationCount = 0;
-  const quickActions = getQuickActions(notificationCount);
+  const activeVolunteerEvents = getActiveVolunteerEvents(userData?.volunteerEvents);
+  const quickActions = getQuickActions(notificationCount, activeVolunteerEvents.length);
 
   const currentHour = new Date().getHours();
   let greetingText = "Good morning";
