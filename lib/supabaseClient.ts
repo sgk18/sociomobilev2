@@ -5,8 +5,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("⚠️ Supabase env vars missing — auth will not work");
-} else {
-  console.log("✅ Supabase initialized with URL:", supabaseUrl);
 }
 
 /**

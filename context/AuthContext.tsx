@@ -169,10 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  useEffect(() => {
-    console.log("AuthProvider: Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log("AuthProvider: Supabase Key starts with:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 10));
-  }, []);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showOutsiderWarning, setShowOutsiderWarning] = useState(false);
   const [outsiderVisitorId, setOutsiderVisitorId] = useState<string | null>(null);
@@ -225,13 +221,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserData(fetchedUser);
         persistUserDataToLS(fetchedUser);
         return fetchedUser;
-      } else if (res.status === 404 && accessToken) {
-        // If profile not found but we have a session, the session might be invalid/stale
-        console.warn("Profile not found for active session - signing out");
-        await supabase.auth.signOut();
-        setSession(null);
-        setUser(null);
-        setUserData(null);
+      }
+
+      // Fallback: If /me failed (404), try fetching by email directly
+      if (res.status === 404 && accessToken && email) {
+        console.log(`Profile not found via token, trying email fallback for: ${email}`);
+        const fallbackRes = await fetch(`/api/pwa/users/${encodeURIComponent(email)}`, {
+          cache: "no-store",
+        });
+        if (fallbackRes.ok) {
+          const data = await fallbackRes.json();
+          const fetchedUser = data.user ?? data;
+          setUserData(fetchedUser);
+          persistUserDataToLS(fetchedUser);
+          return fetchedUser;
+        }
       }
     } catch (e) {
       console.error("Failed to fetch user data", e);
