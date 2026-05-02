@@ -40,6 +40,7 @@ export default function BottomNav() {
                   : "text-[var(--color-text-light)]"
               }`}
             >
+
               <div className={`relative transition-transform duration-200 ${active ? "scale-110" : ""}`}>
                 <Icon
                   size={20}

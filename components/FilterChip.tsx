@@ -18,12 +18,12 @@ export function FilterChip({
       type="button"
       className={`inline-flex items-center justify-center gap-1.5 px-4 py-2 text-[13px] font-bold rounded-full transition-all duration-200 active:scale-[0.97] ${
         isActive
-          ? "bg-[var(--color-primary-dark)] text-white shadow-md"
+          ? "bg-[var(--color-accent)] text-[var(--color-primary-dark)] shadow-md"
           : "bg-[#f3f4f6] text-[var(--color-text-muted)] hover:bg-[#e5e7eb]"
       } ${className}`}
       {...props}
     >
-      {icon && <span className={isActive ? "text-white" : "text-gray-500"}>{icon}</span>}
+      {icon && <span className={isActive ? "text-[var(--color-primary-dark)]" : "text-gray-500"}>{icon}</span>}
       {label}
     </button>
   );

@@ -162,7 +162,7 @@ export default function EventCard({
             <span className={`btn-active-state shrink-0 inline-flex items-center justify-center rounded-lg font-bold transition-all ${
               closed 
                 ? "bg-slate-100 text-slate-400 px-3 py-1.5 text-[12px] opacity-90 cursor-not-allowed" 
-                : "bg-[var(--color-primary-light)] text-[var(--color-primary)] px-4 py-1.5 text-[12px] hover:bg-[var(--color-primary)] hover:text-white"
+                : "bg-[var(--color-accent)] text-[var(--color-primary-dark)] px-4 py-1.5 text-[12px] hover:bg-[var(--color-accent-dark)] hover:text-white"
             }`}>
               {closed ? "Closed" : "Grab Ticket"}
             </span>

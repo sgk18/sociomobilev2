@@ -242,7 +242,7 @@ export default function HomePage() {
         )}
 
         <section>
-          <h2 className="mb-3 text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text)]">
+          <h2 className="mb-3 text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text)] pl-3 border-l-[3px] border-[var(--color-accent)]">
             Quick Actions
           </h2>
           <div className="grid grid-cols-4 gap-2.5">
@@ -271,7 +271,7 @@ export default function HomePage() {
         {upcomingEvents.length > 0 && (
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text)]">
+              <h2 className="text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text)] pl-3 border-l-[3px] border-[var(--color-accent)]">
                 Upcoming Events
               </h2>
               <Link href="/events" className="flex items-center gap-1 text-[12px] font-bold text-[var(--color-primary)]">
@@ -289,7 +289,7 @@ export default function HomePage() {
         {festSpotlight && (
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text)]">
+              <h2 className="text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text)] pl-3 border-l-[3px] border-[var(--color-accent)]">
                 Fest Spotlight
               </h2>
               <Link href="/fests" className="flex items-center gap-1 text-[12px] font-bold text-[var(--color-primary)]">
