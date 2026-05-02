@@ -37,7 +37,6 @@ function restoreSessionFromLS(): Session | null {
   }
 }
 
-/* ── Types ── */
 function persistUserDataToLS(user: UserData | null) {
   try {
     if (user) {
@@ -59,6 +58,7 @@ function restoreUserDataFromLS(): UserData | null {
   }
 }
 
+/* ── Types ── */
 export interface VolunteerAssignment {
   register_number: string;
   expires_at: string;
@@ -186,7 +186,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const msUntilExpiry = expiresAt * 1000 - Date.now() - 60_000; // 60 s buffer
     if (msUntilExpiry <= 0) {
-      // Already (almost) expired — refresh now
       supabase.auth.refreshSession();
       return;
     }
@@ -248,7 +247,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user?.email) await fetchUserData(user.email, session?.access_token);
   }, [fetchUserData, session?.access_token, user?.email]);
 
-  /* Create / update user on first login */
   const ensureUser = useCallback(
     async (supaUser: User) => {
       const email = supaUser.email!;
@@ -345,54 +343,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     async function bootstrap() {
-      const cachedUser = restoreUserDataFromLS();
-      if (cachedUser && mounted) {
-        setUserData({
-          ...cachedUser,
-          volunteerEvents: Array.isArray(cachedUser.volunteerEvents) ? cachedUser.volunteerEvents : [],
-        });
-      }
+      if (typeof window === "undefined") return;
 
-      // 1. Try Supabase cookie-based session first
-      const { data: { session: s } } = await supabase.auth.getSession();
-
-      if (s?.user?.email) {
-        if (mounted) {
-          setSession(s);
-          setUser(s.user);
-          persistSessionToLS(s);
-          scheduleTokenRefresh(s);
+      try {
+        const cachedUser = restoreUserDataFromLS();
+        if (cachedUser && mounted) {
+          setUserData({
+            ...cachedUser,
+            volunteerEvents: Array.isArray(cachedUser.volunteerEvents) ? cachedUser.volunteerEvents : [],
+          });
         }
-        await ensureUser(s.user);
-        if (mounted) setIsLoading(false);
-        return;
-      }
 
-      // 2. Cookie session missing — try localStorage backup (PWA standalone)
-      const lsSession = restoreSessionFromLS();
-      if (lsSession?.refresh_token) {
-        const { data: refreshed } = await supabase.auth.setSession({
-          access_token: lsSession.access_token,
-          refresh_token: lsSession.refresh_token,
-        });
+        // 1. Try Supabase cookie-based session first
+        const { data: { session: s } } = await supabase.auth.getSession();
 
-        if (refreshed.session?.user?.email && mounted) {
-          setSession(refreshed.session);
-          setUser(refreshed.session.user);
-          persistSessionToLS(refreshed.session);
-          scheduleTokenRefresh(refreshed.session);
-          await ensureUser(refreshed.session.user);
-          setIsLoading(false);
+        if (s?.user?.email) {
+          if (mounted) {
+            setSession(s);
+            setUser(s.user);
+            persistSessionToLS(s);
+            scheduleTokenRefresh(s);
+          }
+          void ensureUser(s.user);
           return;
         }
-      }
 
-      // 3. No valid session anywhere
-      if (mounted) {
-        persistSessionToLS(null);
-        persistUserDataToLS(null);
-        setUserData(null);
-        setIsLoading(false);
+        // 2. Cookie session missing — try localStorage backup (PWA standalone)
+        const lsSession = restoreSessionFromLS();
+        if (lsSession?.refresh_token) {
+          const { data: refreshed } = await supabase.auth.setSession({
+            access_token: lsSession.access_token,
+            refresh_token: lsSession.refresh_token,
+          });
+
+          if (refreshed.session?.user?.email && mounted) {
+            setSession(refreshed.session);
+            setUser(refreshed.session.user);
+            persistSessionToLS(refreshed.session);
+            scheduleTokenRefresh(refreshed.session);
+            void ensureUser(refreshed.session.user);
+            return;
+          }
+        }
+
+        // 3. No valid session anywhere
+        if (mounted) {
+          persistSessionToLS(null);
+          persistUserDataToLS(null);
+          setUserData(null);
+        }
+      } catch (err) {
+        console.error("Auth bootstrap failed", err);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -400,15 +405,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
+    } = supabase.auth.onAuthStateChange(async (_event, s) => {
       if (!mounted) return;
       setSession(s);
       setUser(s?.user ?? null);
       persistSessionToLS(s);
       scheduleTokenRefresh(s);
 
-      if (s?.user?.email) ensureUser(s.user);
-      else {
+      if (s?.user?.email) {
+        await ensureUser(s.user);
+      } else {
         setUserData(null);
         persistUserDataToLS(null);
         setIsLoading(false);
@@ -440,7 +446,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persistUserDataToLS(null);
   }, []);
 
-  /* Derived: show campus selector for christ members without campus */
   const needsCampus =
     !isLoading &&
     !!userData &&

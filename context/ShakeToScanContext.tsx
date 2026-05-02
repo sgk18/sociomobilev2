@@ -52,7 +52,11 @@ const ShakeToScanContext = createContext<ShakeToScanContextValue>({
 });
 
 export function useShakeToScan() {
-  return useContext(ShakeToScanContext);
+  const context = useContext(ShakeToScanContext);
+  if (!context) {
+    throw new Error("useShakeToScan must be used within a ShakeToScanProvider");
+  }
+  return context;
 }
 
 export function ShakeToScanProvider({ children }: { children: ReactNode }) {
@@ -61,7 +65,8 @@ export function ShakeToScanProvider({ children }: { children: ReactNode }) {
 
   const motionSupported = useMemo(() => {
     if (typeof window === "undefined") return false;
-    return typeof (window as Window & { DeviceMotionEvent?: unknown }).DeviceMotionEvent !== "undefined";
+    // Safely check for DeviceMotionEvent on window object
+    return "DeviceMotionEvent" in window && typeof (window as any).DeviceMotionEvent !== "undefined";
   }, []);
 
   useEffect(() => {
@@ -69,14 +74,14 @@ export function ShakeToScanProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!motionSupported) {
+    if (!motionSupported || typeof window === "undefined") {
       setMotionPermission("denied");
       return;
     }
 
-    const requestPermission = (DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> })
-      ?.requestPermission;
-    if (typeof requestPermission !== "function") {
+    // Check if requestPermission is needed (iOS Safari)
+    const dmEvent = (window as any).DeviceMotionEvent;
+    if (dmEvent && typeof dmEvent.requestPermission !== "function") {
       setMotionPermission("granted");
     }
   }, [motionSupported]);
@@ -105,15 +110,15 @@ export function ShakeToScanProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
-    const permissionFn = (DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> })
-      ?.requestPermission;
-    if (typeof permissionFn === "function") {
+    const dmEvent = (window as any).DeviceMotionEvent;
+    if (dmEvent && typeof dmEvent.requestPermission === "function") {
       try {
-        const result = await permissionFn();
+        const result = await dmEvent.requestPermission();
         const granted = result === "granted";
         setMotionPermission(granted ? "granted" : "denied");
         return granted;
-      } catch {
+      } catch (e) {
+        console.error("ShakeToScan: Permission request failed", e);
         setMotionPermission("denied");
         return false;
       }
@@ -139,3 +144,5 @@ export function ShakeToScanProvider({ children }: { children: ReactNode }) {
     </ShakeToScanContext.Provider>
   );
 }
+
+export default ShakeToScanProvider;
