@@ -93,6 +93,14 @@ function isAPIRoute(url) {
   return url.includes("/api/pwa/");
 }
 
+function isNoStoreAPIRoute(pathname) {
+  return (
+    pathname.startsWith("/api/pwa/volunteer/") ||
+    pathname === "/api/pwa/users/me" ||
+    pathname.includes("/scan-qr")
+  );
+}
+
 function isCoreRoutePath(pathname) {
   if (CORE_ROUTES.includes(pathname)) return true;
   if (pathname.startsWith("/event/")) return true;
@@ -132,6 +140,11 @@ self.addEventListener("fetch", (event) => {
   }
 
   /* 2. API data — stale-while-revalidate */
+  if (isNoStoreAPIRoute(parsed.pathname)) {
+    event.respondWith(fetch(request).catch(() => new Response("{}", { status: 504 })));
+    return;
+  }
+
   if (isAPIRoute(url)) {
     event.respondWith(
       caches.open(CACHE_API).then((cache) =>

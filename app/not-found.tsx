@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass } from "lucide-react";
+import { CompassIcon } from "@/components/icons";
 
 /**
  * 404 Not Found component for Next.js 15 App Router.
@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-bg)] p-6 text-center">
       <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-[var(--color-primary)]">
-        <Compass size={40} />
+        <CompassIcon size={40} />
       </div>
       
       <h2 className="text-[24px] font-black tracking-tight text-[var(--color-text)]">

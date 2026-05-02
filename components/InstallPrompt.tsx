@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Download, Share } from "lucide-react";
+import { DownloadIcon, ShareIcon } from "@/components/icons";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -101,7 +101,7 @@ export default function InstallPrompt() {
               <div>
                 <p className="text-[13px] font-semibold">Tap the Share button</p>
                 <p className="text-[12px] text-[var(--color-text-muted)] mt-1">
-                  Look for <Share size={13} className="inline text-[var(--color-info)]" /> in your Safari toolbar at the bottom
+                  Look for <ShareIcon size={13} className="inline text-[var(--color-info)]" /> in your Safari toolbar at the bottom
                 </p>
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+12px)] left-3 right-3 z-40 animate-slide-up">
-      <div className="relative overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[#1a6bdb] text-white p-4 shadow-2xl border border-white/10">
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[#1a3db0] text-white p-4 shadow-2xl border border-white/10">
         {/* Decorative background elements */}
         <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-white/5 blur-3xl" />
         <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full bg-white/5 blur-3xl" />
@@ -166,7 +166,7 @@ export default function InstallPrompt() {
               onClick={handleInstall} 
               className="flex-1 btn bg-white text-[var(--color-primary-dark)] font-bold text-[13px] py-2.5 rounded-[var(--radius-lg)] hover:bg-white/95 transition-all active:scale-95"
             >
-              <Download size={15} className="inline mr-1" />
+              <DownloadIcon size={15} className="inline mr-1" />
               Install
             </button>
             <button 

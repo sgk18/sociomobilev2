@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { MessageSquare, Sparkles, Trash2, X } from "lucide-react";
+import { MessageSquareIcon, SparklesIcon, XIcon, TrashIcon } from "@/components/icons";
 
 /* ─── Types ─────────────────────────────────────────── */
 interface QA { q: string; a: string }
@@ -137,7 +137,7 @@ export default function ChatbotFab() {
           className="fixed right-4 z-40 h-12 w-12 rounded-full border-2 border-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white fab-glow btn-active-state flex items-center justify-center hover:scale-105 transition-transform"
           style={{ bottom: `calc(var(--bottom-nav) + var(--safe-bottom) + ${fabBottomOffset})` }}
         >
-          <MessageSquare size={19} strokeWidth={2.1} />
+          <MessageSquareIcon size={19} strokeWidth={2.1} />
         </button>
       )}
 
@@ -163,7 +163,7 @@ export default function ChatbotFab() {
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[var(--color-primary-dark)] to-[var(--color-primary)] text-white shrink-0 border-b border-white/15">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-white/15 border border-white/25 flex items-center justify-center">
-                <MessageSquare size={17} strokeWidth={2.1} />
+                <MessageSquareIcon size={17} strokeWidth={2.1} />
               </div>
               <div>
                 <h2 className="text-[15px] font-bold leading-tight">SocioAssist</h2>
@@ -173,11 +173,11 @@ export default function ChatbotFab() {
             <div className="flex items-center gap-1.5">
               {messages.length > 0 && (
                 <button onClick={clearChat} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors" aria-label="Clear chat">
-                  <Trash2 size={16} />
+                  <TrashIcon size={16} />
                 </button>
               )}
               <button onClick={() => setOpen(false)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors" aria-label="Close">
-                <X size={18} />
+                <XIcon size={18} />
               </button>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function ChatbotFab() {
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center px-4 gap-3">
                 <div className="w-14 h-14 rounded-[var(--radius-lg)] bg-[var(--color-primary-light)] flex items-center justify-center border border-[var(--color-border)]">
-                  <MessageSquare size={22} className="text-[var(--color-primary)]" />
+                  <MessageSquareIcon size={22} className="text-[var(--color-primary)]" />
                 </div>
                 <div>
                   <p className="font-bold text-[15px] text-[var(--color-text)]">How can we help?</p>
@@ -234,7 +234,7 @@ export default function ChatbotFab() {
             {messages.length > 0 && remaining.length > 0 && !isTyping && (
               <div className="pt-1">
                 <p className="text-[11px] text-[var(--color-text-light)] mb-2 flex items-center gap-1.5">
-                  <Sparkles size={12} className="text-[var(--color-primary)]" /> Suggested follow-ups
+                  <SparklesIcon size={12} className="text-[var(--color-primary)]" /> Suggested follow-ups
                 </p>
                 <div className="flex flex-wrap gap-2 max-w-full">
                 {remaining.map((q) => (

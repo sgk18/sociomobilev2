@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { RefreshCcw, AlertTriangle } from "lucide-react";
+import { RefreshCcwIcon, AlertTriangleIcon } from "@/components/icons";
 
 /**
  * Global error boundary to catch runtime crashes, including ChunkLoadErrors.
@@ -34,7 +34,7 @@ export default function GlobalError({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-bg)] p-6 text-center">
       <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 text-red-600">
-        <AlertTriangle size={40} />
+        <AlertTriangleIcon size={40} />
       </div>
       
       <h2 className="text-[24px] font-black tracking-tight text-[var(--color-text)]">
@@ -57,7 +57,7 @@ export default function GlobalError({
           onClick={() => window.location.reload()}
           className="btn btn-ghost flex w-full items-center justify-center gap-2"
         >
-          <RefreshCcw size={16} />
+          <RefreshCcwIcon size={16} />
           Force Refresh
         </button>
       </div>

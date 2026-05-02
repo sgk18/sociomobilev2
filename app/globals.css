@@ -6,38 +6,45 @@
    ══════════════════════════════════════════════════ */
 
 :root {
-  --color-primary: #154CB3;
-  --color-primary-dark: #063168;
-  --color-primary-light: #e8effa;
-  --color-accent: #FFCC00;
-  --color-accent-dark: #e6b800;
-  --color-secondary: #333545;
-  --color-bg: #F5F5F5;
+  /* ── Primary (Deep Navy Blue) ── */
+  --color-primary: #011F7B;
+  --color-primary-dark: #000D3B;
+  --color-primary-light: #E6ECF8;
+  /* ── Accent (Warm Gold-Orange) ── */
+  --color-accent: #FFBA09;
+  --color-accent-dark: #D99E00;
+  /* ── Neutrals ── */
+  --color-secondary: #1E2340;
+  --color-bg: #F8FAFC;
   --color-surface: #FFFFFF;
-  --color-text: #222539;
-  --color-text-muted: #6B7280;
-  --color-text-light: #9CA3AF;
-  --color-border: #E5E7EB;
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-light: #94A3B8;
+  --color-border: #E2E8F0;
+  /* ── Semantic ── */
   --color-success: #10B981;
   --color-danger: #EF4444;
   --color-warning: #F59E0B;
   --color-info: #3B82F6;
+  /* ── Radii ── */
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 999px;
+  /* ── Layout ── */
   --nav-height: 54px;
   --bottom-nav: 60px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  /* ── Shadows — primary rgb(1,31,123) ── */
   --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
-  --shadow-primary: 0 4px 14px rgba(21,76,179,0.25);
+  --shadow-primary: 0 4px 14px rgba(1,31,123,0.28);
   --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
 }
 
@@ -71,9 +78,9 @@ html, body {
 @keyframes confetti  { 0% { opacity:1; transform:translateY(0) rotate(0deg); } 100% { opacity:0; transform:translateY(80px) rotate(180deg); } }
 @keyframes marquee   { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes pulse-blue {
-  0% { box-shadow: 0 0 0 0 rgba(21, 76, 179, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(21, 76, 179, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(21, 76, 179, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(1, 31, 123, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(1, 31, 123, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(1, 31, 123, 0); }
 }
 @keyframes badge-pulse {
   0%, 100% { transform: scale(1); }
@@ -124,7 +131,7 @@ html, body {
   text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
 }
 .brand-pulse {
-  box-shadow: 0 0 0 0 rgba(21, 76, 179, 0.4);
+  box-shadow: 0 0 0 0 rgba(1, 31, 123, 0.4);
   animation: pulse-blue 2s infinite;
 }
 
@@ -207,7 +214,7 @@ html, body {
   background: linear-gradient(to right, var(--color-primary-dark), #031a3d); 
 }
 
-.btn-accent { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 700; box-shadow: 0 4px 14px rgba(255,204,0,0.35); }
+.btn-accent { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 700; box-shadow: 0 4px 14px rgba(255,186,9,0.35); }
 .btn-ghost { background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-border); }
 .btn-ghost:hover:not(:disabled) { background: var(--color-primary-light); border-color: var(--color-primary); }
 .btn-danger { background: transparent; color: var(--color-danger); border: 1.5px solid #fecaca; }
@@ -274,7 +281,7 @@ html, body {
 /* ── FAB — GPU-only animation, no box-shadow changes ─────────────────── */
 .fab-glow {
   /* Static shadow; animation targets opacity only via fab-pulse */
-  box-shadow: 0 8px 24px rgba(21,76,179,0.36);
+  box-shadow: 0 8px 24px rgba(1,31,123,0.36);
   transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
               opacity   150ms ease;
   animation: fab-pulse 3s ease-in-out infinite;
@@ -350,7 +357,7 @@ html, body {
 @media (min-width: 768px) {
   .desktop-gate {
     display: flex; position: fixed; inset: 0; z-index: 9999;
-    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, #1a6bdb 100%);
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, #1a3db0 100%);
     align-items: center; justify-content: center; flex-direction: column;
     gap: 20px; padding: 32px; text-align: center; color: white;
   }
@@ -372,7 +379,7 @@ html, body {
 
 /* ── Gradient text ── */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-primary), #4f8ef7);
+  background: linear-gradient(135deg, var(--color-primary), #2b52d4);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }

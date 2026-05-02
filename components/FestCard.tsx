@@ -82,7 +82,7 @@ export default function FestCard({ fest, isTrending }: { fest: Fest; isTrending?
       <div className="absolute inset-0 p-5 flex flex-col justify-between">
         <div className="flex justify-between items-start">
           {fest.category ? (
-            <span className="bg-[#154cb3] text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
+          <span className="bg-[var(--color-primary)] text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
               {fest.category}
             </span>
           ) : (

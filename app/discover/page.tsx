@@ -4,10 +4,11 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEvents } from "@/context/EventContext";
+import { useAuth } from "@/context/AuthContext";
 import EventCard from "@/components/EventCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { SearchIcon, XIcon, ArrowRightIcon, CalendarIcon, MapPinIcon, SparklesIcon, UsersIcon, ClockIcon, FlameIcon, TrendingUpIcon } from "@/components/icons";
+import { SearchIcon, XIcon, ArrowRightIcon, CalendarIcon, MapPinIcon, SparklesIcon, UsersIcon, FlameIcon, TrendingUpIcon } from "@/components/icons";
 import { FilterChip } from "@/components/FilterChip";
 import { Button } from "@/components/Button";
 import { SectionContainer } from "@/components/SectionContainer";
@@ -16,7 +17,7 @@ import type { Fest } from "@/context/EventContext";
 import { useDebounce } from "@/lib/useDebounce";
 
 const ITEMS_PER_PAGE = 10;
-const QUICK_CATEGORY_LIMIT = 6;
+const QUICK_CATEGORY_LIMIT = 4;
 const GRID_CATEGORY_LIMIT = 4;
 
 function normalizeFestLabel(value: string | null | undefined): string {
@@ -38,16 +39,19 @@ function formatCompactCount(count: number): string {
 
 export default function DiscoverPage() {
   const { allEvents, isLoading } = useEvents();
+  const { userData } = useAuth();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 250);
-  const [showOpen, setShowOpen] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("All");
+  
+  // Advanced Filter System
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(["Open"]));
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [fests, setFests] = useState<Fest[]>([]);
   const [festsLoading, setFestsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  /* Fetch actual fests from API so we get proper fest_id/slug */
+  /* Fetch actual fests from API */
   useEffect(() => {
     (async () => {
       const controller = new AbortController();
@@ -69,19 +73,21 @@ export default function DiscoverPage() {
   }, []);
 
   const categories = useMemo(() => {
-    const values = new Set<string>(["All"]);
-    if (allEvents.some((event) => !event.registration_fee || event.registration_fee === 0)) {
-      values.add("Free");
-    }
+    const counts = new Map<string, number>();
     allEvents.forEach((event) => {
       const category = event.category?.trim();
-      if (category) values.add(category);
+      if (category) {
+        counts.set(category, (counts.get(category) || 0) + 1);
+      }
     });
-    return Array.from(values).slice(0, QUICK_CATEGORY_LIMIT);
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(entry => entry[0])
+      .slice(0, QUICK_CATEGORY_LIMIT);
   }, [allEvents]);
 
   const categoryGrid = useMemo(
-    () => categories.filter((category) => category !== "All").slice(0, GRID_CATEGORY_LIMIT),
+    () => categories.slice(0, GRID_CATEGORY_LIMIT),
     [categories]
   );
 
@@ -113,11 +119,27 @@ export default function DiscoverPage() {
       .slice(0, 6);
   }, [fests, festRegistrationMap]);
 
-  /* Filter events based on search and open status */
+  // Personalization: Curated For You
+  const curatedEvents = useMemo(() => {
+    if (!userData?.department) return [];
+    const dept = userData.department.toLowerCase();
+    
+    // Simple heuristic: match organizing_dept or category to user's department
+    return allEvents.filter(e => 
+      !isDeadlinePassed(e.registration_deadline) &&
+      (e.organizing_dept?.toLowerCase() === dept || e.category?.toLowerCase() === dept)
+    ).slice(0, 5);
+  }, [allEvents, userData?.department]);
+
+  const isTimeFilter = (f: string) => ["Today", "This Week"].includes(f);
+  const isStatusFilter = (f: string) => ["Free", "Trending", "Open"].includes(f);
+
+  /* Filter events based on search and active filters */
   const filtered = useMemo(() => {
     let list = allEvents;
-    if (debouncedSearch) {
-      const q = debouncedSearch.toLowerCase();
+    
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.trim().toLowerCase();
       list = list.filter(
         (e) =>
           String(e.title || "").toLowerCase().includes(q) ||
@@ -127,11 +149,23 @@ export default function DiscoverPage() {
       );
     }
     
-    // Apply new filter chips
-    if (activeCategory === "Today") {
+    // Status Filters
+    if (activeFilters.has("Open")) {
+      list = list.filter((e) => !isDeadlinePassed(e.registration_deadline));
+    }
+    if (activeFilters.has("Free")) {
+      list = list.filter(e => !e.registration_fee || e.registration_fee === 0);
+    }
+    if (activeFilters.has("Trending")) {
+      // Just a simple heuristic for trending events (e.g. top participants)
+      list = list.filter(e => (e.total_participants ?? 0) >= 5);
+    }
+
+    // Time Filters
+    if (activeFilters.has("Today")) {
       const today = new Date().toDateString();
       list = list.filter(e => new Date(e.event_date).toDateString() === today);
-    } else if (activeCategory === "This Week") {
+    } else if (activeFilters.has("This Week")) {
       const today = new Date();
       today.setHours(0,0,0,0);
       const nextWeek = new Date(today);
@@ -140,65 +174,59 @@ export default function DiscoverPage() {
         const d = new Date(e.event_date);
         return d >= today && d <= nextWeek;
       });
-    } else if (activeCategory === "Free") {
-      list = list.filter(e => !e.registration_fee || e.registration_fee === 0);
-    } else if (activeCategory !== "All") {
-      list = list.filter(e => e.category?.trim().toLowerCase() === activeCategory.toLowerCase());
     }
 
-    if (showOpen) {
-      list = list.filter((e) => !isDeadlinePassed(e.registration_deadline));
+    // Category Filters
+    const activeCategories = Array.from(activeFilters).filter(f => !isTimeFilter(f) && !isStatusFilter(f));
+    if (activeCategories.length > 0) {
+      list = list.filter(e => activeCategories.some(c => e.category?.toLowerCase() === c.toLowerCase()));
     }
+
     return list.sort((a, b) => {
       const aClosed = isDeadlinePassed(a.registration_deadline);
       const bClosed = isDeadlinePassed(b.registration_deadline);
       if (aClosed !== bClosed) return aClosed ? 1 : -1;
       return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
     });
-  }, [allEvents, debouncedSearch, activeCategory, showOpen]);
+  }, [allEvents, debouncedSearch, activeFilters]);
+
+  const toggleFilter = (filter: string) => {
+    const newFilters = new Set(activeFilters);
+    if (newFilters.has(filter)) {
+      newFilters.delete(filter);
+    } else {
+      // If setting a time filter, remove other time filters to make them mutually exclusive
+      if (isTimeFilter(filter)) {
+        newFilters.delete("Today");
+        newFilters.delete("This Week");
+      }
+      newFilters.add(filter);
+    }
+    setActiveFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   const allFiltered = filtered;
-  const spotlightEvents = allFiltered.slice(0, 4);
-  const totalPages = Math.ceil(allFiltered.length / ITEMS_PER_PAGE);
+  const spotlightEvents = allFiltered.slice(0, 1); // Hero takes 1
+  
+  // Exclude spotlight event from the rest of the list
+  const listWithoutSpotlight = allFiltered.filter(e => !spotlightEvents.some(s => s.event_id === e.event_id));
+  
+  const totalPages = Math.ceil(listWithoutSpotlight.length / ITEMS_PER_PAGE);
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-  const displayedEvents = allFiltered.slice(0, startIdx + ITEMS_PER_PAGE);
+  const displayedEvents = listWithoutSpotlight.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
-  /* Auto-scroll for Featured Fests */
+  /* Auto-scroll for Trending Fests */
   const scrollRef = useRef<HTMLDivElement>(null);
+  const curatedScrollRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
-  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleUserInteraction = useCallback(() => {
     pausedRef.current = true;
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    resumeTimerRef.current = setTimeout(() => {
+    setTimeout(() => {
       pausedRef.current = false;
     }, 4000);
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const id = setInterval(() => {
-      if (pausedRef.current) return;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (maxScroll <= 0) return;
-      if (el.scrollLeft >= maxScroll - 2) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        const card = el.querySelector<HTMLElement>("[data-fest-card]");
-        const step = card ? card.offsetWidth + 12 : el.clientWidth;
-        el.scrollBy({ left: step, behavior: "smooth" });
-      }
-    }, 3000);
-    return () => clearInterval(id);
-  }, [trendingFests]);
 
   return (
     <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+4px)] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
@@ -253,33 +281,37 @@ export default function DiscoverPage() {
         )}
       </div>
 
-      {/* Filter chips */}
-      <div className="h-scroll mb-6 gap-2.5 items-center">
-        <div className="shrink-0 w-4" aria-hidden />
+      {/* Filter chips (Touch optimized scroll) */}
+      <div className="flex overflow-x-auto mb-6 gap-2.5 items-center no-scrollbar snap-x snap-mandatory">
+        <div className="shrink-0 w-4 snap-start" aria-hidden />
         {!isSearchOpen && (
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="shrink-0 p-2 -ml-2 mr-1 flex items-center justify-center text-[var(--color-text)] transition-transform active:scale-95"
+            className="shrink-0 p-2 -ml-2 mr-1 flex items-center justify-center text-[var(--color-text)] transition-transform active:scale-95 snap-center"
             aria-label="Open search"
           >
             <SearchIcon size={20} strokeWidth={2.5} />
           </button>
         )}
-        {["All", "Today", "This Week", "Free"].map((filter) => {
-          const active = filter === activeCategory;
+        
+        {/* Dynamic Filters List */}
+        {[
+          "Open", "Free", "Trending", 
+          "Today", "This Week", 
+          ...categories
+        ].map((filter) => {
+          const active = activeFilters.has(filter);
           return (
-            <FilterChip
-              key={filter}
-              label={filter}
-              isActive={active}
-              onClick={() => {
-                setActiveCategory(filter);
-                setCurrentPage(1);
-              }}
-            />
+            <div key={filter} className="snap-center shrink-0">
+              <FilterChip
+                label={filter}
+                isActive={active}
+                onClick={() => toggleFilter(filter)}
+              />
+            </div>
           );
         })}
-        <div className="shrink-0 w-4" aria-hidden />
+        <div className="shrink-0 w-4 snap-end" aria-hidden />
       </div>
 
       {isLoading ? (
@@ -289,10 +321,10 @@ export default function DiscoverPage() {
         </div>
       ) : (
         <>
-          {/* Spotlight Hero Card */}
+          {/* 1. Spotlight Hero Card */}
           {spotlightEvents.length > 0 && (
-            <SectionContainer title="Spotlight" actionLabel="See All" actionHref="/events">
-              <Link href={`/event/${spotlightEvents[0].event_id}`} className="group relative block overflow-hidden rounded-[24px] bg-gradient-to-br from-[#1b2533] to-[#0a1835] shadow-[0_12px_36px_rgba(10,24,53,0.3)] aspect-[4/5] max-h-[460px] btn-active-state">
+            <SectionContainer title="Spotlight" actionLabel="See All" actionHref="/events" className="animate-fade-up">
+              <Link href={`/event/${spotlightEvents[0].event_id}`} className="group relative block overflow-hidden rounded-[24px] bg-gradient-to-br from-[#1b2533] to-[#0a1835] shadow-[0_12px_36px_rgba(10,24,53,0.3)] aspect-[4/5] max-h-[460px] btn-active-state will-change-transform">
                 {/* Background effects & Image */}
                 <div className="absolute inset-0 opacity-60 z-0">
                   <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-[var(--color-primary)] rounded-full blur-[100px] z-0" />
@@ -302,7 +334,8 @@ export default function DiscoverPage() {
                       src={(spotlightEvents[0].banner_url || spotlightEvents[0].event_image_url)!}
                       alt={spotlightEvents[0].title}
                       fill
-                      className="object-cover mix-blend-overlay group-hover:scale-[1.03] transition-transform duration-700 ease-out z-[1]"
+                      priority
+                      className="object-cover mix-blend-overlay group-hover:scale-[1.03] transition-transform duration-700 ease-out z-[1] will-change-transform"
                       sizes="(max-width: 768px) 100vw, 800px"
                     />
                   )}
@@ -310,7 +343,7 @@ export default function DiscoverPage() {
                 </div>
                 
                 <div className="absolute inset-0 p-6 flex flex-col justify-end z-10">
-                  <span className="self-start mb-4 chip bg-[#fff4cf] text-[#745b00] text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
+                  <span className="self-start mb-4 chip bg-[#fff4cf] text-[#745b00] text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
                     SPOTLIGHT
                   </span>
                   
@@ -350,9 +383,33 @@ export default function DiscoverPage() {
             </SectionContainer>
           )}
 
-          {/* Trending Fests - Horizontal Scroll */}
-          {(festsLoading || fests.length > 0) && (
-            <div className="pb-8">
+          {/* 2. Curated For You (Personalization) */}
+          {curatedEvents.length > 0 && !debouncedSearch && (
+            <div className="pb-8 animate-fade-up" style={{ animationDelay: '100ms' }}>
+              <div className="px-5 pb-3 flex flex-col justify-start">
+                <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Curated For You</h2>
+                <p className="text-[12px] text-[var(--color-text-muted)] font-medium">Based on your department: {userData?.department}</p>
+              </div>
+              <div
+                ref={curatedScrollRef}
+                onTouchStart={handleUserInteraction}
+                onMouseDown={handleUserInteraction}
+                className="flex overflow-x-auto gap-3.5 snap-x snap-mandatory scroll-smooth pb-2 no-scrollbar will-change-scroll"
+              >
+                <div className="shrink-0 w-5 snap-start" aria-hidden />
+                {curatedEvents.map((e) => (
+                  <div key={e.event_id} className="w-[calc(100vw-60px)] max-w-[320px] shrink-0 snap-center">
+                    <EventCard event={e} />
+                  </div>
+                ))}
+                <div className="shrink-0 w-5 snap-end" aria-hidden />
+              </div>
+            </div>
+          )}
+
+          {/* 3. Trending Fests / Events */}
+          {(festsLoading || fests.length > 0) && !debouncedSearch && (
+            <div className="pb-8 animate-fade-up" style={{ animationDelay: '150ms' }}>
               <div className="px-5 pb-3 flex items-center justify-between">
                 <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Trending Now</h2>
                 <Link href="/fests" className="text-[12px] font-bold text-[var(--color-primary-dark)] hover:underline">
@@ -363,10 +420,10 @@ export default function DiscoverPage() {
                 ref={scrollRef}
                 onTouchStart={handleUserInteraction}
                 onMouseDown={handleUserInteraction}
-                className="flex overflow-x-auto gap-3.5 snap-x snap-mandatory scroll-smooth pb-1 no-scrollbar"
+                className="flex overflow-x-auto gap-3.5 snap-x snap-mandatory scroll-smooth pb-2 no-scrollbar will-change-scroll"
               >
                 {/* left spacer */}
-                <div className="shrink-0 w-5" aria-hidden />
+                <div className="shrink-0 w-5 snap-start" aria-hidden />
                 {festsLoading
                   ? Array.from({ length: 2 }).map((_, idx) => (
                       <div
@@ -389,7 +446,7 @@ export default function DiscoverPage() {
                           key={f.fest_id || f.id}
                           href={`/fest/${f.slug || f.fest_id}`}
                           data-fest-card
-                          className="card-elevated group w-[calc(100vw-40px)] max-w-[380px] flex-shrink-0 snap-center"
+                          className="card-elevated group w-[calc(100vw-40px)] max-w-[380px] flex-shrink-0 snap-center btn-active-state will-change-transform"
                         >
                           <div className="relative aspect-[16/10] bg-[var(--color-primary-light)] overflow-hidden">
                             {img ? (
@@ -397,7 +454,8 @@ export default function DiscoverPage() {
                                 src={img}
                                 alt={title}
                                 fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                loading="lazy"
+                                className="object-cover transition-transform duration-500 group-hover:scale-[1.03] will-change-transform"
                                 sizes="(max-width:480px) 70vw, 280px"
                               />
                             ) : (
@@ -412,7 +470,7 @@ export default function DiscoverPage() {
                               <span className="text-white text-[10px] font-medium tracking-wide">Trending</span>
                             </div>
 
-                            <span className="absolute top-2.5 right-2.5 chip bg-white/92 text-[var(--color-primary)] text-[10px] font-bold">
+                            <span className="absolute top-2.5 right-2.5 chip bg-white/92 text-[var(--color-primary)] text-[10px] font-bold shadow-sm">
                               Fest
                             </span>
                           </div>
@@ -439,24 +497,24 @@ export default function DiscoverPage() {
                       );
                     })}
                 {/* right spacer */}
-                <div className="shrink-0 w-5" aria-hidden />
+                <div className="shrink-0 w-5 snap-end" aria-hidden />
               </div>
             </div>
           )}
 
-          {/* Browse by Vibe (Asymmetric Grid) */}
-          {categoryGrid.length > 0 && (
-            <SectionContainer title="Browse by Vibe" actionLabel="View All" actionHref="/events">
+          {/* 4. Browse by Vibe (Categories) */}
+          {categoryGrid.length > 0 && !debouncedSearch && activeFilters.size <= 1 && (
+            <SectionContainer title="Browse by Vibe" actionLabel="View All" actionHref="/events" className="animate-fade-up" style={{ animationDelay: '200ms' }}>
               <div className="grid grid-cols-2 gap-3">
                 {/* Full Width Card */}
                 {categoryGrid[0] && (
                   <button
-                    onClick={() => { setActiveCategory(categoryGrid[0]); setCurrentPage(1); }}
-                    className="col-span-2 relative bg-[#eef0ff] rounded-2xl p-5 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#d0d6ff] transition-all min-h-[110px] flex flex-col justify-center"
+                    onClick={() => toggleFilter(categoryGrid[0])}
+                    className="col-span-2 relative bg-[#eef0ff] rounded-2xl p-5 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#d0d6ff] transition-all min-h-[110px] flex flex-col justify-center will-change-transform"
                   >
                     <div className="relative z-10">
                       <div className="w-8 h-8 rounded-full bg-[#3b5bdb] text-white flex items-center justify-center mb-2 shadow-sm">
-                        <SparklesIcon size={16} />
+                         <FlameIcon size={16} />
                       </div>
                       <h3 className="text-[18px] font-black text-[#263161] leading-tight mb-1">{categoryGrid[0]}</h3>
                       <p className="text-[12px] text-[#55629c] font-medium">Explore the best</p>
@@ -471,30 +529,30 @@ export default function DiscoverPage() {
                 {/* Half Width Cards */}
                 {categoryGrid[1] && (
                   <button
-                    onClick={() => { setActiveCategory(categoryGrid[1]); setCurrentPage(1); }}
-                    className="col-span-1 relative bg-[#fff4cf] rounded-2xl p-4 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#ffe18a] transition-all min-h-[120px] flex flex-col justify-between"
+                    onClick={() => toggleFilter(categoryGrid[1])}
+                    className="col-span-1 relative bg-[#fff4cf] rounded-2xl p-4 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#ffe18a] transition-all min-h-[120px] flex flex-col justify-between will-change-transform"
                   >
                     <div className="w-7 h-7 rounded-full bg-[#f59e0b] text-white flex items-center justify-center shadow-sm">
                       <UsersIcon size={14} />
                     </div>
                     <div>
-                      <h3 className="text-[16px] font-black text-[#745b00] leading-tight mb-0.5">{categoryGrid[1]}</h3>
-                      <p className="text-[11px] text-[#a18627] font-medium">12 Active</p>
+                      <h3 className="text-[16px] font-black text-[#745b00] leading-tight mb-0.5 line-clamp-1">{categoryGrid[1]}</h3>
+                      <p className="text-[11px] text-[#a18627] font-medium">Trending</p>
                     </div>
                   </button>
                 )}
                 
                 {categoryGrid[2] && (
                   <button
-                    onClick={() => { setActiveCategory(categoryGrid[2]); setCurrentPage(1); }}
-                    className="col-span-1 relative bg-[#f1edfc] rounded-2xl p-4 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#dbcefc] transition-all min-h-[120px] flex flex-col justify-between"
+                    onClick={() => toggleFilter(categoryGrid[2])}
+                    className="col-span-1 relative bg-[#f1edfc] rounded-2xl p-4 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#dbcefc] transition-all min-h-[120px] flex flex-col justify-between will-change-transform"
                   >
                     <div className="w-7 h-7 rounded-full bg-[#7c3aed] text-white flex items-center justify-center shadow-sm">
                       <CalendarIcon size={14} />
                     </div>
                     <div>
-                      <h3 className="text-[16px] font-black text-[#3d1880] leading-tight mb-0.5">{categoryGrid[2]}</h3>
-                      <p className="text-[11px] text-[#6b4ab0] font-medium">45 Active</p>
+                      <h3 className="text-[16px] font-black text-[#3d1880] leading-tight mb-0.5 line-clamp-1">{categoryGrid[2]}</h3>
+                      <p className="text-[11px] text-[#6b4ab0] font-medium">Upcoming</p>
                     </div>
                   </button>
                 )}
@@ -502,24 +560,22 @@ export default function DiscoverPage() {
             </SectionContainer>
           )}
 
-          {/* Events Section - Vertical List */}
-          {allFiltered.length > 0 && (
-            <SectionContainer title="Curated For You">
+          {/* 5. All Upcoming Section - Vertical List */}
+          {listWithoutSpotlight.length > 0 && (
+            <SectionContainer title="All Upcoming" className="animate-fade-up" style={{ animationDelay: '250ms' }}>
               <div className="space-y-5">
                 {displayedEvents.map((e) => (
                   <EventCard key={e.event_id} event={e} />
                 ))}
               </div>
 
-              {/* Beautiful Pagination */}
+              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="px-5 mt-6 flex flex-col items-center gap-4">
-                  {/* Page indicator */}
                   <p className="text-[12px] text-[var(--color-text-muted)] font-semibold">
                     Page <span className="text-[var(--color-primary)] font-bold">{currentPage}</span> of <span className="text-[var(--color-primary)] font-bold">{totalPages}</span>
                   </p>
 
-                  {/* Page dots */}
                   <div className="flex items-center gap-1.5">
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                       const pageNum = i + 1;
@@ -528,7 +584,7 @@ export default function DiscoverPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`transition-all ${
+                          className={`transition-all btn-active-state ${
                             isCurrentPage
                               ? "w-8 h-2 rounded-full bg-[var(--color-primary)]"
                               : "w-2 h-2 rounded-full bg-[var(--color-border)] hover:bg-[var(--color-text-light)]"
@@ -540,13 +596,13 @@ export default function DiscoverPage() {
                     {totalPages > 5 && <span className="text-[var(--color-text-muted)] text-[11px] ml-1">•••</span>}
                   </div>
 
-                  {/* Next/Prev buttons */}
                   <div className="flex items-center gap-2 mt-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
+                      className="btn-active-state"
                     >
                       Previous
                     </Button>
@@ -555,6 +611,7 @@ export default function DiscoverPage() {
                       size="sm"
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
+                      className="btn-active-state"
                     >
                       Next
                     </Button>
@@ -566,12 +623,17 @@ export default function DiscoverPage() {
 
           {/* Empty state */}
           {allFiltered.length === 0 && (
-            <div className="px-5 py-12">
+            <div className="px-5 py-12 animate-fade-in">
               <EmptyState
                 icon={<SearchIcon size={32} className="text-[var(--color-primary)]" />}
                 title="No events found"
                 subtitle="Try adjusting your search or filters to see more results"
               />
+              <div className="mt-6 flex justify-center">
+                <Button variant="outline" onClick={() => { setActiveFilters(new Set(["Open"])); setSearch(""); }}>
+                  Clear Filters
+                </Button>
+              </div>
             </div>
           )}
         </>
@@ -579,4 +641,3 @@ export default function DiscoverPage() {
     </div>
   );
 }
-

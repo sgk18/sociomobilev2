@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, X } from "lucide-react";
+import { MessageSquareIcon, XIcon } from "@/components/icons";
 import { useState } from "react";
 
 export default function ChatbotSoonFab() {
@@ -15,7 +15,7 @@ export default function ChatbotSoonFab() {
         className="fixed right-3 z-40 w-12 h-12 rounded-full bg-[var(--color-primary)] text-white shadow-[var(--shadow-primary)] flex items-center justify-center hover:scale-110 transition-transform"
         style={{ bottom: "calc(var(--bottom-nav) + var(--safe-bottom) + 10px)" }}
       >
-        <MessageSquare size={22} strokeWidth={2} />
+        <MessageSquareIcon size={22} strokeWidth={2} />
       </button>
 
       {/* Tooltip Modal */}
@@ -37,7 +37,7 @@ export default function ChatbotSoonFab() {
                 onClick={() => setShowTooltip(false)}
                 className="p-0.5 rounded hover:bg-black/5 flex-shrink-0"
               >
-                <X size={14} />
+                <XIcon size={14} />
               </button>
             </div>
           </div>

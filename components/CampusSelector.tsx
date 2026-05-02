@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { MapPin, Loader2, RefreshCw, Copy, Check } from "lucide-react";
+import { MapPinIcon, Loader2Icon, RefreshCwIcon, CopyIcon, CheckIcon } from "@/components/icons";
 
 /* ── Christ University campus coordinates (match web) ── */
 const CAMPUSES = [
@@ -150,7 +150,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
       <div className="modal-card">
         <div className="px-5 pt-5 pb-2 text-center border-b border-[var(--color-border)]">
           <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center">
-            <MapPin size={24} className="text-[var(--color-primary)]" />
+            <MapPinIcon size={24} className="text-[var(--color-primary)]" />
           </div>
           <h2 className="text-lg font-extrabold">
             {state === "finalConfirm" ? "Final Confirmation" : "Set Your Campus"}
@@ -160,7 +160,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
         <div className="px-5 pb-5">
           {state === "detecting" && (
             <div className="flex flex-col items-center py-6">
-              <Loader2 size={36} className="animate-spin text-[var(--color-primary)] mb-3" />
+              <Loader2Icon size={36} className="animate-spin text-[var(--color-primary)] mb-3" />
               <p className="text-[13px] text-[var(--color-text-muted)] text-center font-medium">
                 Detecting your location...
               </p>
@@ -223,7 +223,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
                     title="Copy YES to clipboard"
                     type="button"
                   >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
                     {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
@@ -251,7 +251,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
           {state === "notOnCampus" && (
             <>
               <div className="text-center mb-4 mt-5">
-                <MapPin size={30} className="mx-auto text-[var(--color-text-light)] mb-2" />
+                <MapPinIcon size={30} className="mx-auto text-[var(--color-text-light)] mb-2" />
                 <p className="text-[var(--color-text)] font-semibold text-sm">Not on campus</p>
                 <p className="text-[var(--color-text-light)] text-xs mt-1">
                   Try again when on your campus network. You can use <strong>Detect Campus</strong> on your profile anytime.
@@ -269,7 +269,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
 
           {state === "saving" && (
             <div className="flex flex-col items-center py-6">
-              <Loader2 size={36} className="animate-spin text-[var(--color-primary)] mb-3" />
+              <Loader2Icon size={36} className="animate-spin text-[var(--color-primary)] mb-3" />
               <p className="text-[14px] font-semibold text-center">Saving your campus...</p>
             </div>
           )}
@@ -293,7 +293,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
                 <p className="text-xs text-red-600 mt-1">{errorMsg}</p>
               </div>
               <button onClick={detectLocation} className="btn btn-primary w-full">
-                <RefreshCw size={16} /> Try Again
+                <RefreshCwIcon size={16} /> Try Again
               </button>
               <button
                 onClick={handleDismiss}
