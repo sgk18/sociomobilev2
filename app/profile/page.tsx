@@ -254,8 +254,8 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (!isLoading && !userData) router.replace("/auth");
-  }, [isLoading, userData, router]);
+    if (!isLoading && !session) router.replace("/auth");
+  }, [isLoading, session, router]);
 
   if (isLoading) return <LoadingScreen />;
   if (!userData) return <LoadingScreen />;

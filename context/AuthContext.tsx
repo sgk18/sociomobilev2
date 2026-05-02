@@ -365,6 +365,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             scheduleTokenRefresh(s);
           }
           void ensureUser(s.user);
+          if (mounted) setIsLoading(false);
           return;
         }
 
@@ -413,7 +414,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       scheduleTokenRefresh(s);
 
       if (s?.user?.email) {
-        await ensureUser(s.user);
+        void ensureUser(s.user);
+        setIsLoading(false);
       } else {
         setUserData(null);
         persistUserDataToLS(null);

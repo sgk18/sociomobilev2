@@ -19,8 +19,8 @@ export function SectionContainer({
   ...props
 }: SectionContainerProps) {
   return (
-    <div className={`px-5 pb-8 ${className}`} style={style} {...props}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={`px-5 pb-6 ${className}`} style={style} {...props}>
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-[20px] font-extrabold tracking-[-0.02em] text-[#1a1c1c]">{title}</h2>
         {actionLabel && actionHref && (
           <Link

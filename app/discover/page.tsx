@@ -229,30 +229,30 @@ export default function DiscoverPage() {
   }, []);
 
   return (
-    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+4px)] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
+    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top))] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
       {/* Search & Header Row */}
-      <div className="px-5 pt-2 pb-4 h-[60px] flex flex-col justify-center">
+      <div className="px-5 h-[42px] flex flex-col justify-center">
         {!isSearchOpen ? (
           <div className="flex items-center justify-between animate-fade-in">
             <h1 className="text-[26px] font-black tracking-tight text-[var(--color-text)]">Discover</h1>
           </div>
         ) : (
-          <div className="flex items-center gap-3 animate-fade-in">
-            <div className="relative group flex-1 min-w-0">
+          <div className="flex-1 flex items-center gap-2 animate-fade-in">
+            <div className="relative flex-1 min-w-0">
               <SearchIcon
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]"
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]"
               />
               <input
                 autoFocus
                 type="text"
-                placeholder="Search events, clubs, or workshops..."
+                placeholder="Search events, clubs..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full h-[46px] pl-[44px] pr-10 text-[14px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all duration-200 placeholder:text-[var(--color-text-muted)] font-medium"
+                className="w-full h-[36px] pl-9 pr-8 text-[13px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all placeholder:text-[var(--color-text-muted)] font-medium"
               />
               {search && (
                 <button
@@ -260,10 +260,9 @@ export default function DiscoverPage() {
                     setSearch("");
                     setCurrentPage(1);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-1.5 rounded-full hover:bg-black/5 z-[1]"
-                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] p-1 rounded-full hover:bg-black/5 z-[1]"
                 >
-                  <XIcon size={16} />
+                  <XIcon size={14} />
                 </button>
               )}
             </div>
@@ -273,7 +272,7 @@ export default function DiscoverPage() {
                 setSearch("");
                 setCurrentPage(1);
               }}
-              className="text-[13px] font-bold text-[var(--color-primary-dark)] px-1 shrink-0"
+              className="text-[12px] font-bold text-[var(--color-primary-dark)] shrink-0 px-1"
             >
               Cancel
             </button>
@@ -281,8 +280,8 @@ export default function DiscoverPage() {
         )}
       </div>
 
-      {/* Filter chips (Touch optimized scroll) */}
-      <div className="flex overflow-x-auto mb-6 gap-2.5 items-center no-scrollbar snap-x snap-mandatory">
+      {/* Filter chips row */}
+      <div className="flex overflow-x-auto mb-3 gap-2.5 items-center no-scrollbar snap-x snap-mandatory h-[48px]">
         <div className="shrink-0 w-4 snap-start" aria-hidden />
         {!isSearchOpen && (
           <button
@@ -303,11 +302,17 @@ export default function DiscoverPage() {
           const active = activeFilters.has(filter);
           return (
             <div key={filter} className="snap-center shrink-0">
-              <FilterChip
-                label={filter}
-                isActive={active}
+              <button
+                type="button"
                 onClick={() => toggleFilter(filter)}
-              />
+                className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all whitespace-nowrap ${
+                  active
+                    ? "bg-[var(--color-accent)] text-[var(--color-primary-dark)] shadow-sm"
+                    : "bg-[#f3f4f6] text-[var(--color-text-muted)] hover:bg-[#e5e7eb]"
+                }`}
+              >
+                {filter}
+              </button>
             </div>
           );
         })}
@@ -385,7 +390,7 @@ export default function DiscoverPage() {
 
           {/* 2. Curated For You (Personalization) */}
           {curatedEvents.length > 0 && !debouncedSearch && (
-            <div className="pb-8 animate-fade-up" style={{ animationDelay: '100ms' }}>
+            <div className="pb-6 animate-fade-up" style={{ animationDelay: '100ms' }}>
               <div className="px-5 pb-3 flex flex-col justify-start">
                 <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Curated For You</h2>
                 <p className="text-[12px] text-[var(--color-text-muted)] font-medium">Based on your department: {userData?.department}</p>
@@ -409,7 +414,7 @@ export default function DiscoverPage() {
 
           {/* 3. Trending Fests / Events */}
           {(festsLoading || fests.length > 0) && !debouncedSearch && (
-            <div className="pb-8 animate-fade-up" style={{ animationDelay: '150ms' }}>
+            <div className="pb-6 animate-fade-up" style={{ animationDelay: '150ms' }}>
               <div className="px-5 pb-3 flex items-center justify-between">
                 <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Trending Now</h2>
                 <Link href="/fests" className="text-[12px] font-bold text-[var(--color-primary-dark)] hover:underline">

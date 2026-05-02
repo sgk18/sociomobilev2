@@ -95,27 +95,27 @@ export default function EventsPage() {
   const hasMore = currentPage < totalPages;
 
   return (
-    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top)+4px)] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
+    <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top))] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
       {/* Search & Header Row */}
-      <div className="px-5 pt-2 pb-4 h-[60px] flex flex-col justify-center">
+      <div className="px-5 h-[42px] flex flex-col justify-center">
         {!isSearchOpen ? (
           <div className="flex items-center justify-between animate-fade-in">
             <h1 className="text-[26px] font-black tracking-tight text-[var(--color-text)]">Events</h1>
           </div>
         ) : (
-          <div className="flex items-center gap-3 animate-fade-in">
-            <div className="relative group flex-1 min-w-0">
-              <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]" />
+          <div className="flex-1 flex items-center gap-2 animate-fade-in">
+            <div className="relative flex-1 min-w-0">
+              <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none z-[1]" />
               <input
                 autoFocus
                 type="text"
-                placeholder="Search events…"
+                placeholder="Search events, fests..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full h-[46px] pl-[44px] pr-10 text-[14px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all duration-200 placeholder:text-[var(--color-text-muted)] font-medium"
+                className="w-full h-[36px] pl-9 pr-8 text-[13px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all placeholder:text-[var(--color-text-muted)] font-medium"
               />
               {search && (
                 <button 
@@ -123,10 +123,9 @@ export default function EventsPage() {
                     setSearch("");
                     setCurrentPage(1);
                   }} 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-1.5 rounded-full hover:bg-black/5 z-[1]"
-                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] p-1 rounded-full hover:bg-black/5 z-[1]"
                 >
-                  <XIcon size={16} />
+                  <XIcon size={14} />
                 </button>
               )}
             </div>
@@ -136,7 +135,7 @@ export default function EventsPage() {
                 setSearch("");
                 setCurrentPage(1);
               }}
-              className="text-[13px] font-bold text-[var(--color-primary-dark)] px-1 shrink-0"
+              className="text-[12px] font-bold text-[var(--color-primary-dark)] shrink-0 px-1"
             >
               Cancel
             </button>
@@ -144,41 +143,54 @@ export default function EventsPage() {
         )}
       </div>
 
-      {/* Filters */}
-      <div className="h-scroll mb-6 gap-2.5 items-center">
-        <div className="shrink-0 w-4" aria-hidden />
+      {/* Filter chips row */}
+      <div className="flex overflow-x-auto mb-3 gap-2.5 items-center no-scrollbar snap-x snap-mandatory h-[48px]">
+        <div className="shrink-0 w-4 snap-start" aria-hidden />
         {!isSearchOpen && (
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="shrink-0 p-2 -ml-2 mr-1 flex items-center justify-center text-[var(--color-text)] transition-transform active:scale-95"
+            className="shrink-0 p-2 -ml-2 mr-1 flex items-center justify-center text-[var(--color-text)] transition-transform active:scale-95 snap-center"
             aria-label="Open search"
           >
             <SearchIcon size={20} strokeWidth={2.5} />
           </button>
         )}
-        <FilterChip
-          label="Open only"
-          icon={<FilterIcon size={14} />}
-          isActive={onlyOpen}
+        
+        <button
           onClick={() => {
             setOnlyOpen(!onlyOpen);
             setCurrentPage(1);
           }}
-        />
+          className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all whitespace-nowrap snap-center ${
+            onlyOpen
+              ? "bg-[var(--color-accent)] text-[var(--color-primary-dark)] shadow-sm"
+              : "bg-[#f3f4f6] text-[var(--color-text-muted)] hover:bg-[#e5e7eb]"
+          }`}
+        >
+          Open only
+        </button>
+
         {SORT_OPTIONS.map(({ key, label, icon }) => (
-          <FilterChip
+          <button
             key={key}
-            label={label}
-            icon={icon}
-            isActive={sort === key}
             onClick={() => {
               setSort(key);
               setCurrentPage(1);
             }}
-          />
+            className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all whitespace-nowrap snap-center flex items-center gap-1.5 ${
+              sort === key
+                ? "bg-[var(--color-accent)] text-[var(--color-primary-dark)] shadow-sm"
+                : "bg-[#f3f4f6] text-[var(--color-text-muted)] hover:bg-[#e5e7eb]"
+            }`}
+          >
+            {icon}
+            {label}
+          </button>
         ))}
-        <div className="shrink-0 w-4" aria-hidden />
+        <div className="shrink-0 w-4 snap-end" aria-hidden />
       </div>
+
+
 
       {/* List */}
       {isLoading ? (

@@ -59,6 +59,7 @@ export function useShakeToScan() {
   return context;
 }
 
+// Named export only to match other providers
 export function ShakeToScanProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ShakeToScanState>(DEFAULT_STATE);
   const [motionPermission, setMotionPermission] = useState<MotionPermission>("unknown");
@@ -145,4 +146,4 @@ export function ShakeToScanProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export default ShakeToScanProvider;
+
