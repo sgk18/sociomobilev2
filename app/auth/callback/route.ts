@@ -35,7 +35,7 @@ async function createUserInDB(user: any) {
       }
     }
 
-    fetch(`${API_URL}/api/users`, {
+    const res = await fetch(`${API_URL}/api/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -48,8 +48,14 @@ async function createUserInDB(user: any) {
           course,
         },
       }),
-    }).catch(() => {});
-  } catch {}
+    });
+    
+    if (!res.ok) {
+      console.error(`Failed to create user in DB: ${res.status} ${await res.text().catch(() => "")}`);
+    }
+  } catch (err) {
+    console.error("Error in createUserInDB:", err);
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -81,7 +87,7 @@ export async function GET(request: NextRequest) {
   try {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
-    if (data.user) createUserInDB(data.user);
+    if (data.user) await createUserInDB(data.user);
     // Redirect to /auth so the auth page can pick up sessionStorage.returnTo
     return NextResponse.redirect(`${appOrigin}/auth`);
   } catch (err) {

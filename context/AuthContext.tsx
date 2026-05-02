@@ -168,6 +168,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    console.log("AuthProvider: Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log("AuthProvider: Supabase Key starts with:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 10));
+  }, []);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showOutsiderWarning, setShowOutsiderWarning] = useState(false);
   const [outsiderVisitorId, setOutsiderVisitorId] = useState<string | null>(null);
@@ -220,6 +225,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserData(fetchedUser);
         persistUserDataToLS(fetchedUser);
         return fetchedUser;
+      } else if (res.status === 404 && accessToken) {
+        // If profile not found but we have a session, the session might be invalid/stale
+        console.warn("Profile not found for active session - signing out");
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setUserData(null);
       }
     } catch (e) {
       console.error("Failed to fetch user data", e);

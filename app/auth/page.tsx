@@ -31,7 +31,7 @@ function GoogleMark() {
 }
 
 export default function AuthPage() {
-  const { session, isLoading, signInWithGoogle } = useAuth();
+  const { session, userData, isLoading, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -69,7 +69,7 @@ export default function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (isLoading || !session) return;
+    if (isLoading || !session || !userData) return;
 
     let destination = "/discover";
     if (typeof window !== "undefined") {
@@ -80,7 +80,7 @@ export default function AuthPage() {
       sessionStorage.removeItem("returnTo");
     }
     router.replace(destination);
-  }, [session, isLoading, router]);
+  }, [session, userData, isLoading, router]);
 
   const handleGoogleSignIn = async () => {
     setAuthError(null);

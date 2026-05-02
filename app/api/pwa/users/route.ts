@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     });
 
     const bodyText = await res.text();
+    console.log(`Backend POST /api/users response: ${res.status} ${bodyText}`);
     return new NextResponse(bodyText, {
       status: res.status,
       headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
