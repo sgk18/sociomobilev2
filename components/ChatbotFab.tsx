@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { MessageSquareIcon, SparklesIcon, XIcon } from "@/components/icons";
+import { MessageSquareIcon, SparklesIcon, XIcon, TrashIcon } from "@/components/icons";
 
 /* ─── Types ─────────────────────────────────────────── */
 interface QA { q: string; a: string }

@@ -8,6 +8,7 @@ export interface SectionContainerProps {
   actionHref?: string;
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function SectionContainer({
@@ -16,9 +17,10 @@ export function SectionContainer({
   actionHref,
   children,
   className = "",
+  style,
 }: SectionContainerProps) {
   return (
-    <div className={`px-5 pb-8 ${className}`}>
+    <div className={`px-5 pb-8 ${className}`} style={style}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[20px] font-extrabold tracking-[-0.02em] text-[#1a1c1c]">{title}</h2>
         {actionLabel && actionHref && (
