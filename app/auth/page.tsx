@@ -87,8 +87,8 @@ export default function AuthPage() {
     setIsSubmitting(true);
     try {
       await signInWithGoogle();
-    } catch {
-      setAuthError("Could not start Google sign-in. Please try again.");
+    } catch (e: any) {
+      setAuthError(e?.message || "Could not start Google sign-in. Please try again.");
       setIsSubmitting(false);
     }
   };

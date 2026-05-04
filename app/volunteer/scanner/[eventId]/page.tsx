@@ -59,17 +59,32 @@ export default function VolunteerScannerPage() {
 
         if (cancelled) return;
 
-        if (!res.ok || !payload.authorized) {
+        if (payload.authorized === false) {
           setEvent(null);
           setError(payload.error || DENIED_MESSAGE);
+          return;
+        }
+
+        if (!res.ok) {
+          if (cachedEvent) {
+            console.warn("Scanner access validation failed, falling back to cached event.");
+            setEvent(cachedEvent);
+          } else {
+            setEvent(null);
+            setError(payload.error || DENIED_MESSAGE);
+          }
           return;
         }
 
         setEvent(payload.event || cachedEvent);
       } catch {
         if (!cancelled) {
-          setEvent(null);
-          setError("Unable to validate scanner access.");
+          if (cachedEvent) {
+             setEvent(cachedEvent);
+          } else {
+             setEvent(null);
+             setError("Unable to validate scanner access.");
+          }
         }
       } finally {
         if (!cancelled) setIsChecking(false);
