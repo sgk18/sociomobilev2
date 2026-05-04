@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents, type FetchedEvent } from "@/context/EventContext";
-import { CalendarDaysIcon, BellIcon, CompassIcon, ArrowRightIcon, MapPinIcon, Clock3Icon, FlameIcon, TicketIcon, QrCodeIcon } from "@/components/icons";
+import { CalendarDaysIcon, BellIcon, CompassIcon, ArrowRightIcon, MapPinIcon, Clock3Icon, FlameIcon, TicketIcon, QrCodeIcon, BuildingIcon } from "@/components/icons";
 import { formatDateShort, formatTime, isDeadlinePassed } from "@/lib/dateUtils";
 import { getActiveVolunteerEvents } from "@/lib/volunteerAccess";
 
@@ -49,11 +49,10 @@ function getQuickActions(notificationCount: number, volunteerCount: number) {
       tone: "bg-[#fff4cf] text-[#745b00]",
     },
     {
-      href: "/notifications",
-      label: "Updates",
-      icon: BellIcon,
-      tone: "bg-[#fde8e8] text-[#ba1a1a]",
-      badge: notificationCount > 0 ? notificationCount : undefined,
+      href: "/clubs",
+      label: "Clubs &\nCentres",
+      icon: BuildingIcon,
+      tone: "bg-[#f1edfc] text-[#7c3aed]",
     },
   ];
 
