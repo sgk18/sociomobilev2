@@ -17,6 +17,7 @@ import {
 } from "@/components/icons";
 import { formatDateShort, formatTime } from "@/lib/dateUtils";
 import { getActiveVolunteerEvents } from "@/lib/volunteerAccess";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 const DENIED_MESSAGE = "You do not have permission to access this feature";
 
@@ -90,7 +91,7 @@ export default function VolunteerDashboardPage() {
       setEvents(cachedActiveEvents);
 
       try {
-        const res = await fetch("/api/pwa/volunteer/events", {
+        const res = await fetch(`${PWA_API_URL}/volunteer/events`, {
           headers: {
             Authorization: `Bearer ${session!.access_token}`,
           },

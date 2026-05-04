@@ -15,6 +15,7 @@ import { SectionContainer } from "@/components/SectionContainer";
 import { formatDateShort, isDeadlinePassed } from "@/lib/dateUtils";
 import type { Fest } from "@/context/EventContext";
 import { useDebounce } from "@/lib/useDebounce";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 const ITEMS_PER_PAGE = 10;
 const QUICK_CATEGORY_LIMIT = 4;
@@ -58,7 +59,7 @@ export default function DiscoverPage() {
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       try {
-        const res = await fetch("/api/pwa/fests", { signal: controller.signal });
+        const res = await fetch(`${PWA_API_URL}/fests`, { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
           const arr = data.fests ?? data.data ?? data ?? [];

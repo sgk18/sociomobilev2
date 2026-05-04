@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { DownloadIcon, XIcon, AlertCircleIcon, Loader2Icon } from "@/components/icons";
 import { useAuth } from "@/context/AuthContext";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 interface QRCodeDisplayProps {
   registrationId: string;
@@ -34,7 +35,7 @@ export default function QRCodeDisplay({
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`/api/pwa/registrations/${encodeURIComponent(registrationId)}/qr-code`, {
+        const res = await fetch(`${PWA_API_URL}/registrations/${encodeURIComponent(registrationId)}/qr-code`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },

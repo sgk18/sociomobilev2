@@ -90,14 +90,22 @@ function isStaticAsset(request) {
 }
 
 function isAPIRoute(url) {
-  return url.includes("/api/pwa/");
+  const parsed = new URL(url);
+  const isBackend = parsed.origin === "https://socio2026v2server.vercel.app";
+  return url.includes("/api/pwa/") || (isBackend && parsed.pathname.startsWith("/api/"));
 }
 
-function isNoStoreAPIRoute(pathname) {
+function isNoStoreAPIRoute(parsed) {
+  const { pathname, origin } = parsed;
+  const isBackend = origin === "https://socio2026v2server.vercel.app";
   return (
     pathname.startsWith("/api/pwa/volunteer/") ||
     pathname === "/api/pwa/users/me" ||
-    pathname.includes("/scan-qr")
+    pathname.includes("/scan-qr") ||
+    (isBackend && (
+      pathname.startsWith("/api/volunteer/") ||
+      pathname === "/api/users/me"
+    ))
   );
 }
 
@@ -140,7 +148,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   /* 2. API data — stale-while-revalidate */
-  if (isNoStoreAPIRoute(parsed.pathname)) {
+  if (isNoStoreAPIRoute(parsed)) {
     event.respondWith(fetch(request).catch(() => new Response("{}", { status: 504 })));
     return;
   }

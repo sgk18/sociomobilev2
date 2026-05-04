@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/Button";
 import type { FetchedEvent } from "@/context/EventContext";
 import { getActiveVolunteerEvents } from "@/lib/volunteerAccess";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 interface Registration {
   event_id: string;
@@ -122,7 +123,7 @@ export default function ProfilePage() {
         if (userData.email) params.set("email", userData.email);
 
         const res = await fetch(
-          `/api/pwa/registrations?${params.toString()}`
+          `${PWA_API_URL}/registrations?${params.toString()}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -204,7 +205,7 @@ export default function ProfilePage() {
     setCancelConfirmId(null);
     try {
       const res = await fetch(
-        `/api/pwa/registrations/self/${encodeURIComponent(registration.registration_id)}`,
+        `${PWA_API_URL}/registrations/self/${encodeURIComponent(registration.registration_id)}`,
         {
           method: "DELETE",
           headers: {
@@ -251,7 +252,7 @@ export default function ProfilePage() {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-      const resp = await fetch(`/api/pwa/users/${encodeURIComponent(userData.email)}/name`, {
+      const resp = await fetch(`${PWA_API_URL}/users/${encodeURIComponent(userData.email)}/name`, {
         method: "PUT",
         headers,
         body: JSON.stringify({

@@ -7,8 +7,7 @@ import { NotificationProvider } from "@/context/NotificationContext";
 import { ShakeToScanProvider } from "@/context/ShakeToScanContext";
 import type { FetchedEvent } from "@/context/EventContext";
 import AppShell from "./AppShell";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 export const metadata: Metadata = {
   title: "SOCIO – Campus Events",
@@ -31,7 +30,7 @@ export const viewport: Viewport = {
 
 async function fetchEvents(): Promise<FetchedEvent[]> {
   try {
-    const res = await fetch(`${API_URL}/api/events`, {
+    const res = await fetch(`${PWA_API_URL}/events`, {
       next: { revalidate: 300 },
     });
     if (!res.ok) return [];

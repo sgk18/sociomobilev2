@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { MapPinIcon, Loader2Icon, RefreshCwIcon, CopyIcon, CheckIcon } from "@/components/icons";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 /* ── Christ University campus coordinates (match web) ── */
 const CAMPUSES = [
@@ -113,7 +114,7 @@ export default function CampusSelector({ email, accessToken, onComplete, onDismi
   const saveCampus = async (campus: string) => {
     setState("saving");
     try {
-      const res = await fetch(`/api/pwa/users/${encodeURIComponent(email)}/campus`, {
+      const res = await fetch(`${PWA_API_URL}/users/${encodeURIComponent(email)}/campus`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
