@@ -265,7 +265,7 @@ export default function RegisterClient({ eventId }: { eventId: string }) {
     ) : null;
 
   return (
-    <div className="pb-8">
+    <div className="pb-[calc(var(--bottom-nav)+var(--safe-bottom)+32px)]">
       <div className="bg-[var(--color-primary-dark)] text-white p-4 pb-5">
         <button
           onClick={() => router.back()}

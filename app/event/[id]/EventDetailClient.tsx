@@ -537,7 +537,7 @@ export default function EventDetailClient({ eventId }: { eventId: string }) {
         )
       )}
 
-      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+14px)] left-1/2 -translate-x-1/2 w-[min(92vw,400px)] z-40 bg-white/95 backdrop-blur-xl border border-[var(--color-border)] shadow-[0_12px_40px_rgba(17,24,39,0.15)] p-3 px-4 rounded-[20px] animate-slide-up">
+      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+20px)] left-1/2 -translate-x-1/2 w-[min(92vw,400px)] z-40 bg-white/95 backdrop-blur-xl border border-[var(--color-border)] shadow-[0_12px_40px_rgba(17,24,39,0.15)] p-3 px-4 rounded-[20px] animate-slide-up">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-lg font-extrabold text-[var(--color-text)]">

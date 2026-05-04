@@ -76,61 +76,50 @@ export default function VolunteerDashboardPage() {
     enableForEvent(eventId);
   };
 
-  useEffect(() => {
-    if (isLoading) return;
-    if (!session?.access_token) {
-      setIsFetching(false);
-      return;
-    }
+  const fetchVolunteerEvents = useCallback(async () => {
+    if (isLoading || !session?.access_token) return;
 
-    let cancelled = false;
+    setIsFetching(true);
+    setError(null);
+    setEvents(cachedActiveEvents);
 
-    async function fetchVolunteerEvents() {
-      setIsFetching(true);
-      setError(null);
-      setEvents(cachedActiveEvents);
+    try {
+      const res = await fetch(`${PWA_API_URL}/volunteer/events`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store",
+      });
+      const payload = await res.json().catch(() => ({}));
 
-      try {
-        const res = await fetch(`${PWA_API_URL}/volunteer/events`, {
-          headers: {
-            Authorization: `Bearer ${session!.access_token}`,
-          },
-          cache: "no-store",
-        });
-        const payload = await res.json().catch(() => ({}));
-
-        if (cancelled) return;
-
-        if (!res.ok) {
-          setEvents([]);
-          setError(payload.error || DENIED_MESSAGE);
-          return;
-        }
-
-        const nextEvents = getActiveVolunteerEvents(payload.events || []);
-        setEvents(nextEvents);
-      } catch {
-        if (!cancelled) {
-          setEvents([]);
-          setError("Unable to load volunteer assignments.");
-        }
-      } finally {
-        if (!cancelled) setIsFetching(false);
+      if (!res.ok) {
+        setEvents([]);
+        setError(payload.error || DENIED_MESSAGE);
+        return;
       }
+
+      const nextEvents = getActiveVolunteerEvents(payload.events || []);
+      setEvents(nextEvents);
+    } catch {
+      setEvents([]);
+      setError("Unable to load volunteer assignments.");
+    } finally {
+      setIsFetching(false);
     }
-
-    void fetchVolunteerEvents();
-
-    return () => {
-      cancelled = true;
-    };
   }, [cachedActiveEvents, isLoading, session]);
 
-  if (isLoading || (isFetching && events.length === 0)) {
+  useEffect(() => {
+    fetchVolunteerEvents();
+  }, [fetchVolunteerEvents]);
+
+  if (isLoading || (isFetching && events.length === 0 && !error)) {
     return <LoadingScreen />;
   }
 
-  const denied = error || events.length === 0;
+  const isVolunteer = (userData?.volunteerEvents && userData.volunteerEvents.length > 0) || events.length > 0;
+  const hasActiveEvents = events.length > 0;
+  const showDenied = error || (!isVolunteer && !isFetching);
+  const showNoActive = isVolunteer && !hasActiveEvents && !isFetching && !error;
 
   return (
     <div className="pwa-page min-h-screen px-4 pb-[calc(var(--bottom-nav)+var(--safe-bottom)+96px)] pt-[calc(var(--nav-height)+var(--safe-top)+16px)]">
@@ -149,18 +138,36 @@ export default function VolunteerDashboardPage() {
           </div>
         </section>
 
-        {denied ? (
+        {showDenied ? (
           <section className="card p-5 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
               <AlertTriangleIcon size={22} />
             </div>
-            <h2 className="text-[16px] font-extrabold text-[var(--color-text)]">Access unavailable</h2>
+            <h2 className="text-[16px] font-extrabold text-[var(--color-text)]">Access denied</h2>
             <p className="mx-auto mt-2 max-w-[280px] text-[13px] leading-5 text-[var(--color-text-muted)]">
               {error || DENIED_MESSAGE}
             </p>
             <Button variant="primary" className="mt-4" onClick={() => router.replace("/")}>
               Back Home
             </Button>
+          </section>
+        ) : showNoActive ? (
+          <section className="card p-6 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+              <CalendarDaysIcon size={24} />
+            </div>
+            <h2 className="text-[16px] font-extrabold text-[var(--color-text)]">No active assignments</h2>
+            <p className="mx-auto mt-2 max-w-[280px] text-[13px] leading-5 text-[var(--color-text-muted)]">
+              You are registered as a volunteer, but you have no active event assignments at the moment.
+            </p>
+            <div className="mt-6 flex flex-col gap-2">
+              <Button variant="primary" onClick={() => fetchVolunteerEvents()}>
+                Refresh Assignments
+              </Button>
+              <Button variant="ghost" onClick={() => router.replace("/")}>
+                Back Home
+              </Button>
+            </div>
           </section>
         ) : (
           <section className="space-y-3">

@@ -368,7 +368,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
               </div>
               <button type="button" onClick={() => setIsApplyModalOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f3f4f6] text-[var(--color-text-muted)]"><XIcon size={16} /></button>
             </div>
-            <form onSubmit={handleApplySubmit} className="px-5 py-4 space-y-4">
+            <form onSubmit={handleApplySubmit} className="px-5 pt-4 pb-[calc(var(--bottom-nav)+var(--safe-bottom)+24px)] space-y-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-muted)] mb-1 block">Register Number</label>
                 <input value={registerNumber} disabled readOnly className="input bg-[#f8f9fa] text-[var(--color-text)] font-semibold text-[13px]" />
@@ -386,7 +386,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => setIsApplyModalOpen(false)} disabled={isSubmitting} className="btn btn-ghost btn-sm flex-1">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="btn btn-primary btn-sm flex-1">{isSubmitting ? "Submitting..." : "Submit Application"}</button>
+                <button type="submit" disabled={isSubmitting} className="btn btn-accent btn-sm flex-1">{isSubmitting ? "Submitting..." : "Submit Application"}</button>
               </div>
             </form>
           </div>
