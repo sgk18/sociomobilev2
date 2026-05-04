@@ -91,13 +91,24 @@ function isStaticAsset(request) {
 
 function isAPIRoute(url) {
   const parsed = new URL(url);
-  const isBackend = parsed.origin === "https://socio2026v2server.vercel.app";
+  const hostname = parsed.hostname;
+  const origin = parsed.origin;
+  const isBackend = 
+    origin === "https://socio2026v2server.vercel.app" ||
+    hostname.endsWith(".vercel.app") || 
+    hostname === "localhost" || 
+    hostname === "127.0.0.1";
+    
   return url.includes("/api/pwa/") || (isBackend && parsed.pathname.startsWith("/api/"));
 }
 
 function isNoStoreAPIRoute(parsed) {
-  const { pathname, origin } = parsed;
-  const isBackend = origin === "https://socio2026v2server.vercel.app";
+  const { pathname, hostname, origin } = parsed;
+  const isBackend = 
+    origin === "https://socio2026v2server.vercel.app" ||
+    hostname.endsWith(".vercel.app") || 
+    hostname === "localhost" || 
+    hostname === "127.0.0.1";
   return (
     pathname.startsWith("/api/pwa/volunteer/") ||
     pathname === "/api/pwa/users/me" ||
