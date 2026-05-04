@@ -15,10 +15,10 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get("code");
-      const next = searchParams.get("next") || "/auth";
-      
+      const next = searchParams.get("next") || "/";
+
       if (!code) {
-        // If no code, maybe it's a hash-based callback or already handled
+        // No code — check if already have a session (e.g. magic link / implicit flow)
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           await refreshUserData();
@@ -31,26 +31,43 @@ export default function AuthCallbackPage() {
 
       try {
         const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) throw exchangeError;
+        
+        if (exchangeError) {
+          // PKCE verifier was likely cleared (dev reload, cross-device, etc.)
+          // Fall back: check if there's already an active session
+          const { data: { session: existingSession } } = await supabase.auth.getSession();
+          if (existingSession) {
+            await refreshUserData();
+            const returnTo = sessionStorage.getItem("returnTo");
+            if (returnTo) sessionStorage.removeItem("returnTo");
+            router.replace(returnTo || next);
+            return;
+          }
+          throw exchangeError;
+        }
 
         if (data.session) {
           await refreshUserData();
-          
-          // Check if we have a returnTo path in sessionStorage
           const returnTo = sessionStorage.getItem("returnTo");
           if (returnTo) {
             sessionStorage.removeItem("returnTo");
             router.replace(returnTo);
           } else {
-            router.replace("/");
+            router.replace(next);
           }
         } else {
           router.replace("/auth");
         }
       } catch (err: any) {
         console.error("Auth callback error:", err);
-        setError(err.message || "Authentication failed");
-        setTimeout(() => router.replace("/auth"), 3000);
+        const msg = err.message || "Authentication failed";
+        // PKCE errors are recoverable — just redirect to login cleanly
+        if (msg.toLowerCase().includes("pkce") || msg.toLowerCase().includes("verifier")) {
+          setError("Session expired. Please sign in again.");
+        } else {
+          setError(msg);
+        }
+        setTimeout(() => router.replace("/auth"), 2000);
       }
     };
 

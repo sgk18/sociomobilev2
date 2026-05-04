@@ -108,15 +108,8 @@ export default function ProfilePage() {
     }
 
     const cacheKey = `regs_${registerNumber || userData.email}`;
-    const cachedData = sessionStorage.getItem(cacheKey);
-    if (cachedData) {
-      try {
-        setRegistrations(JSON.parse(cachedData));
-        setRegLoading(false);
-      } catch (err) {
-        // Ignore cache parsing error
-      }
-    }
+    // Always clear cache to ensure fresh data on each profile load
+    sessionStorage.removeItem(cacheKey);
 
     (async () => {
       try {
@@ -124,8 +117,14 @@ export default function ProfilePage() {
         if (registerNumber) params.set("registerNumber", registerNumber);
         if (userData.email) params.set("email", userData.email);
 
+        const headers: Record<string, string> = {};
+        if (session?.access_token) {
+          headers.Authorization = `Bearer ${session.access_token}`;
+        }
+
         const res = await fetch(
-          `${PWA_API_URL}/registrations?${params.toString()}`
+          `${PWA_API_URL}/registrations?${params.toString()}`,
+          { headers }
         );
         if (res.ok) {
           const data = await res.json();
@@ -159,7 +158,8 @@ export default function ProfilePage() {
       }
       setRegLoading(false);
     })();
-  }, [userData]);
+  }, [userData, session]);
+
 
   // Deduplicate registrations by event_id and enrich with event data
   const uniqueRegistrations = useMemo(() => {
