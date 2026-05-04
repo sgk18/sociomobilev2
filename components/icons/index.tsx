@@ -563,3 +563,22 @@ export const SettingsIcon = (props: IconProps) => (
     <circle cx="12" cy="12" r="3" />
   </IconBase>
 );
+export const ChefHatIcon = (props: IconProps) => (
+  <IconBase {...props}>
+    <path d="M6 13.8a4.41 4.41 0 1 1 2.6-7.6 4.41 4.41 0 1 1 6.8 0 4.41 4.41 0 1 1 2.6 7.6 4.41 4.41 0 0 1-12 0Z" />
+    <path d="M7 13v4h10v-4" />
+    <path d="M17 17v2a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-2" />
+  </IconBase>
+);
+
+export const ChevronLeftIcon = (props: IconProps) => (
+  <IconBase {...props}>
+    <path d="m15 18-6-6 6-6" />
+  </IconBase>
+);
+
+export const ChevronRightIcon = (props: IconProps) => (
+  <IconBase {...props}>
+    <path d="m9 18 6-6-6-6" />
+  </IconBase>
+);

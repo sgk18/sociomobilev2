@@ -93,6 +93,12 @@ export interface UserRoles {
   it_support?: boolean;
   venue_manager?: boolean;
   stalls?: boolean;
+  catering?: boolean;
+}
+
+export interface CateringInfo {
+  is_catering: boolean;
+  catering_id: string;
 }
 
 export interface UserData {
@@ -110,6 +116,7 @@ export interface UserData {
   organization_type: "christ_member" | "outsider";
   visitor_id: string | null;
   outsider_name_edit_used: boolean;
+  caters?: CateringInfo[];
   created_at: string;
   roles?: UserRoles;
   volunteerEvents?: VolunteerEvent[];

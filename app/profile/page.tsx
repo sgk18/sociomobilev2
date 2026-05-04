@@ -27,6 +27,7 @@ import {
   SearchIcon,
   XIcon,
   SettingsIcon,
+  ChefHatIcon as ChefHat,
 } from "@/components/icons";
 import { Button } from "@/components/Button";
 import type { FetchedEvent } from "@/context/EventContext";
@@ -373,6 +374,18 @@ export default function ProfilePage() {
                   ? `${activeVolunteerEvents.length} active assignment${activeVolunteerEvents.length === 1 ? "" : "s"}`
                   : "View assignments & scanner"}
               </p>
+            </div>
+            <ChevronRight size={15} className="text-[var(--color-text-light)]" />
+          </Link>
+        )}
+        {(userData?.is_masteradmin || (userData?.caters?.length ?? 0) > 0) && (
+          <Link href="/catering" className="flex-1 card p-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center">
+              <ChefHat size={17} className="text-orange-600" />
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-[13px] font-bold">Catering Dashboard</p>
+              <p className="text-[11px] text-[var(--color-text-muted)]">Manage food orders & bookings</p>
             </div>
             <ChevronRight size={15} className="text-[var(--color-text-light)]" />
           </Link>
