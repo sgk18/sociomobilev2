@@ -361,7 +361,7 @@ export default function ProfilePage() {
           </div>
           <ChevronRight size={15} className="text-[var(--color-text-light)]" />
         </button>
-        ((userData?.volunteerEvents?.length ?? 0) > 0 || userData?.is_organiser || userData?.is_masteradmin || userData?.is_support) && (
+        {((userData?.volunteerEvents?.length ?? 0) > 0 || userData?.is_organiser || userData?.is_masteradmin || userData?.is_support) && (
           <Link href="/volunteer" className="flex-1 card p-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
               <QrCode size={17} className="text-[var(--color-primary)]" />
