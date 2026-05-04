@@ -9,6 +9,9 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import { Capacitor } from "@capacitor/core";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session, User } from "@supabase/supabase-js";
 
@@ -418,6 +421,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [fetchUserData, outsiderVisitorId, session?.access_token, userData?.email]
   );
 
+  /* App Deep Link Listener */
+  useEffect(() => {
+    if (typeof window === "undefined" || !Capacitor.isNativePlatform()) return;
+
+    const listener = CapacitorApp.addListener("appUrlOpen", async (event) => {
+      try {
+        const url = new URL(event.url);
+        if (url.protocol === "socio:" && url.pathname.includes("/callback")) {
+          const token = url.searchParams.get("token");
+          const refreshToken = url.searchParams.get("refresh_token");
+          
+          if (token && refreshToken) {
+            await Browser.close().catch(() => {});
+            
+            await supabase.auth.setSession({
+              access_token: token,
+              refresh_token: refreshToken,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error handling deep link", err);
+      }
+    });
+
+    return () => {
+      listener.then(l => l.remove()).catch(() => {});
+    };
+  }, []);
+
   /* Auth state listener */
   useEffect(() => {
     let mounted = true;
@@ -512,11 +545,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /* Actions */
   const signInWithGoogle = useCallback(async () => {
+    const isApp = typeof window !== "undefined" && Capacitor.isNativePlatform();
     const runtimeOrigin = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
-    await supabase.auth.signInWithOAuth({
+    const redirectUrl = isApp ? `${runtimeOrigin}/auth/callback?source=capacitor` : `${runtimeOrigin}/auth/callback`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${runtimeOrigin}/auth/callback` },
+      options: { 
+        redirectTo: redirectUrl,
+        skipBrowserRedirect: isApp 
+      },
     });
+
+    if (error) {
+      console.error("Google sign-in error", error);
+      throw error;
+    }
+
+    if (isApp && data?.url) {
+      await Browser.open({ url: data.url });
+    }
   }, []);
 
   const signOut = useCallback(async () => {

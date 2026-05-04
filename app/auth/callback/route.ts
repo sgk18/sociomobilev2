@@ -62,6 +62,8 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const appOrigin = `${url.protocol}//${url.host}`;
   const code = url.searchParams.get("code");
+  const source = url.searchParams.get("source");
+  const isApp = source === "capacitor";
 
   if (!code) {
     return NextResponse.redirect(`${appOrigin}/?error=no_code`);
@@ -88,6 +90,11 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
     if (data.user) await createUserInDB(data.user);
+    
+    if (isApp && data.session) {
+      return NextResponse.redirect(`socio://auth/callback?token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`);
+    }
+
     // Redirect to /auth so the auth page can pick up sessionStorage.returnTo
     return NextResponse.redirect(`${appOrigin}/auth`);
   } catch (err) {
