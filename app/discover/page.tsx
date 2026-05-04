@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import EventCard from "@/components/EventCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { SearchIcon, XIcon, ArrowRightIcon, CalendarIcon, MapPinIcon, SparklesIcon, UsersIcon, FlameIcon, TrendingUpIcon } from "@/components/icons";
+import { SearchIcon, XIcon, ArrowRightIcon, CalendarIcon, MapPinIcon, SparklesIcon, UsersIcon, FlameIcon, TrendingUpIcon, BuildingIcon } from "@/components/icons";
 import { FilterChip } from "@/components/FilterChip";
 import { Button } from "@/components/Button";
 import { SectionContainer } from "@/components/SectionContainer";
@@ -557,6 +557,29 @@ export default function DiscoverPage() {
                     </div>
                   </button>
                 )}
+
+                {/* Clubs Card */}
+                <Link
+                  href="/clubs"
+                  className="col-span-2 relative bg-[#ecfdf5] rounded-2xl p-5 overflow-hidden text-left btn-active-state border border-transparent hover:border-[#a7f3d0] transition-all min-h-[100px] flex flex-col justify-center will-change-transform"
+                >
+                  <div className="relative z-10 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#059669] text-white flex items-center justify-center shadow-md">
+                      <BuildingIcon size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-[18px] font-black text-[#064e3b] leading-tight">Clubs & Orgs</h3>
+                      <p className="text-[12px] text-[#065f46] font-medium mt-0.5">Join a community today</p>
+                    </div>
+                    <div className="ml-auto">
+                      <ArrowRightIcon size={20} className="text-[#059669]" />
+                    </div>
+                  </div>
+                  {/* Decorative icon */}
+                  <div className="absolute right-[-5%] top-[-10%] text-[#a7f3d0] opacity-30 rotate-[15deg]">
+                    <BuildingIcon size={100} strokeWidth={1} />
+                  </div>
+                </Link>
               </div>
             </SectionContainer>
           )}

@@ -8,7 +8,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { ArrowLeftIcon, UserIcon } from "@/components/icons";
 
 // Pages that show back button instead of logo
-const BACK_PAGES = ["/event/", "/fest/", "/notifications"];
+const BACK_PAGES = ["/event/", "/fest/", "/notifications", "/club/"];
 
 export default function TopBar() {
   const { userData } = useAuth();

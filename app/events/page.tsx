@@ -23,7 +23,7 @@ const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ReactNode }[] = [
 export default function EventsPage() {
   const { allEvents, isLoading } = useEvents();
   const [search, setSearch] = useState("");
-  const [debouncedSearch] = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search, 300);
   const [sort, setSort] = useState<SortKey>("date");
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
