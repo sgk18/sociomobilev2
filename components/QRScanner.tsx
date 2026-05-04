@@ -5,6 +5,7 @@ import QrScanner from "qr-scanner";
 import { useAuth } from "@/context/AuthContext";
 import { AlertTriangleIcon, CameraIcon, CheckCircleIcon, QrCodeIcon, XIcon } from "@/components/icons";
 import { Button } from "@/components/Button";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 interface QRScannerProps {
   eventId: string;
@@ -68,7 +69,7 @@ export default function QRScanner({ eventId, eventTitle, onScanSuccess }: QRScan
     scannerRef.current?.stop();
 
     try {
-      const response = await fetch(`/api/pwa/events/${encodeURIComponent(eventId)}/scan-qr`, {
+      const response = await fetch(`${PWA_API_URL}/events/${encodeURIComponent(eventId)}/scan-qr`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

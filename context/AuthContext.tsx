@@ -14,6 +14,7 @@ import { App as CapacitorApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session, User } from "@supabase/supabase-js";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 /* ── Local-storage helpers for PWA session persistence ── */
 const LS_SESSION_KEY = "socio_pwa_session";
@@ -207,7 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
       const res = await fetch(
-        accessToken ? "/api/pwa/users/me" : `/api/pwa/users/${encodeURIComponent(email)}`,
+        accessToken ? `${PWA_API_URL}/users/me` : `${PWA_API_URL}/users/${encodeURIComponent(email)}`,
         {
           headers,
           cache: "no-store",
@@ -226,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If volunteerEvents is empty, try fetching from the dedicated endpoint
         if (fetchedUser.volunteerEvents.length === 0 && accessToken) {
           try {
-            const volRes = await fetch("/api/pwa/volunteer/events", {
+            const volRes = await fetch(`${PWA_API_URL}/volunteer/events`, {
               headers: { Authorization: `Bearer ${accessToken}` },
               cache: "no-store",
             });
@@ -248,7 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fallback: If /me failed (404), try fetching by email directly
       if (res.status === 404 && accessToken && email) {
         console.log(`Profile not found via token, trying email fallback for: ${email}`);
-        const fallbackRes = await fetch(`/api/pwa/users/${encodeURIComponent(email)}`, {
+        const fallbackRes = await fetch(`${PWA_API_URL}/users/${encodeURIComponent(email)}`, {
           cache: "no-store",
         });
         if (fallbackRes.ok) {
@@ -270,7 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Try token-based first if we have one
               let volData: any = null;
               if (accessToken) {
-                const volRes = await fetch("/api/pwa/volunteer/events", {
+                const volRes = await fetch(`${PWA_API_URL}/volunteer/events`, {
                   headers: { Authorization: `Bearer ${accessToken}` },
                   cache: "no-store",
                 });
@@ -282,7 +283,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // If token-based failed or returned empty, try email-based fallback
               if (!volData || !volData.events || volData.events.length === 0) {
                 console.log(`Trying email-based volunteer fetch for ${email}`);
-                const emailVolRes = await fetch(`/api/pwa/volunteer/events?email=${encodeURIComponent(email)}`, {
+                const emailVolRes = await fetch(`${PWA_API_URL}/volunteer/events?email=${encodeURIComponent(email)}`, {
                   cache: "no-store",
                 });
                 if (emailVolRes.ok) {
@@ -359,7 +360,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        await fetch(`/api/pwa/users`, {
+        await fetch(`${PWA_API_URL}/users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -394,7 +395,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-        const resp = await fetch(`/api/pwa/users/${encodeURIComponent(userData.email)}/name`, {
+        const resp = await fetch(`${PWA_API_URL}/users/${encodeURIComponent(userData.email)}/name`, {
           method: "PUT",
           headers,
           body: JSON.stringify({

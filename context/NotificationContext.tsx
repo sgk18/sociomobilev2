@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Capacitor } from "@capacitor/core";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { PWA_API_URL } from "@/lib/apiConfig";
 
 export interface Notification {
   id: string;
@@ -165,7 +166,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `/api/pwa/notifications?email=${encodeURIComponent(userData.email)}&page=1&limit=30`,
+        `${PWA_API_URL}/notifications?email=${encodeURIComponent(userData.email)}&page=1&limit=30`,
         {
           headers: session?.access_token
             ? { Authorization: `Bearer ${session.access_token}` }
@@ -199,7 +200,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       );
       setUnreadCount((c) => Math.max(0, c - 1));
       try {
-        await fetch(`/api/pwa/notifications/${id}/read`, {
+        await fetch(`${PWA_API_URL}/notifications/${id}/read`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -217,7 +218,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
     try {
-      await fetch(`/api/pwa/notifications`, {
+      await fetch(`${PWA_API_URL}/notifications`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -239,7 +240,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        await fetch(`/api/pwa/notifications/${encodeURIComponent(id)}?email=${encodeURIComponent(userData.email)}`, {
+        await fetch(`${PWA_API_URL}/notifications/${encodeURIComponent(id)}?email=${encodeURIComponent(userData.email)}`, {
           method: "DELETE",
           headers: session?.access_token
             ? { Authorization: `Bearer ${session.access_token}` }
@@ -257,7 +258,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setUnreadCount(0);
 
     try {
-      await fetch(`/api/pwa/notifications?email=${encodeURIComponent(userData.email)}`, {
+      await fetch(`${PWA_API_URL}/notifications?email=${encodeURIComponent(userData.email)}`, {
         method: "DELETE",
         headers: session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }

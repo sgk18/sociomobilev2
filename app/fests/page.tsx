@@ -9,6 +9,7 @@ import EmptyState from "@/components/EmptyState";
 import { SearchIcon, XIcon, SparklesIcon, HeartIcon, CalendarIcon, FlameIcon, ArrowRightIcon, TrendingUpIcon } from "@/components/icons";
 import { Button } from "@/components/Button";
 import { FilterChip } from "@/components/FilterChip";
+import { PWA_API_URL } from "@/lib/apiConfig";
 import { SectionContainer } from "@/components/SectionContainer";
 import type { Fest } from "@/context/EventContext";
 import { useDebounce } from "@/lib/useDebounce";
@@ -31,7 +32,7 @@ export default function FestsPage() {
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       try {
-        const res = await fetch(`/api/pwa/fests`, { signal: controller.signal });
+        const res = await fetch(`${PWA_API_URL}/fests`, { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
           const festArray = data.fests ?? data.data ?? data ?? [];
