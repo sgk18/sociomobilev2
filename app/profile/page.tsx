@@ -378,7 +378,7 @@ export default function ProfilePage() {
             <ChevronRight size={15} className="text-[var(--color-text-light)]" />
           </Link>
         )}
-        {(userData?.is_masteradmin || (userData?.caters?.length ?? 0) > 0) && (
+        {(userData?.is_masteradmin || userData?.roles?.catering) && (
           <Link href="/catering" className="flex-1 card p-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center">
               <ChefHat size={17} className="text-orange-600" />

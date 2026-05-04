@@ -231,6 +231,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : [];
         fetchedUser.roles = fetchedUser.roles ?? data.roles ?? {};
         
+        // Derive catering role from caters array
+        if (fetchedUser.caters && fetchedUser.caters.length > 0) {
+          fetchedUser.roles.catering = true;
+        }
+        
         // If volunteerEvents is empty, try fetching from the dedicated endpoint
         if (fetchedUser.volunteerEvents.length === 0 && accessToken) {
           try {
@@ -271,6 +276,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               ? data.volunteerEvents
               : [];
           fetchedUser.roles = fetchedUser.roles ?? data.roles ?? {};
+
+          // Derive catering role from caters array
+          if (fetchedUser.caters && fetchedUser.caters.length > 0) {
+            fetchedUser.roles.catering = true;
+          }
           
           // If volunteerEvents is empty, try fetching from the dedicated endpoint
           if (fetchedUser.volunteerEvents.length === 0) {

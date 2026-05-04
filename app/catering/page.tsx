@@ -130,7 +130,7 @@ export default function CateringDashboardPage() {
     return <LoadingScreen />;
   }
 
-  if (!userData?.is_masteradmin && (!userData?.caters || userData.caters.length === 0)) {
+  if (!userData?.is_masteradmin && !userData?.roles?.catering) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
