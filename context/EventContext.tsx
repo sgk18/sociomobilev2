@@ -35,6 +35,10 @@ export interface FetchedEvent {
   outsider_max_participants: number | null;
   custom_fields: any;
   claims_applicable: boolean;
+  campus_hosted_at?: string | null;
+  allowed_campuses?: string[] | string | null;
+  is_archived?: boolean | null;
+  is_draft?: boolean | null;
 }
 
 export interface Fest {
@@ -58,6 +62,8 @@ export interface Fest {
   highlights?: any;
   faqs?: any;
   banner_url?: string | null;
+  campus_hosted_at?: string | null;
+  allowed_campuses?: string[] | string | null;
   // aliases used by components
   name?: string;
   image_url?: string | null;
@@ -65,6 +71,105 @@ export interface Fest {
   end_date?: string;
   department?: string | null;
 }
+
+/* ── Campus Availability Logic (ported from socio2026v2/client/context/EventContext.tsx) ── */
+
+export interface CampusScopedItem {
+  campus_hosted_at?: string | null;
+  allowed_campuses?: string[] | string | null;
+  venue?: string | null;
+  allow_outsiders?: boolean | null;
+}
+
+const normalizeCampusText = (value: string | null | undefined): string => {
+  if (!value) return "";
+  return value
+    .toLowerCase()
+    .replace(/[()]/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+};
+
+const CAMPUS_ALIASES: Record<string, string[]> = {
+  "central campus main": ["central campus main", "central campus", "main campus", "central"],
+  "bannerghatta road campus": ["bannerghatta road campus", "bannerghatta", "bg road"],
+  "yeshwanthpur campus": ["yeshwanthpur campus", "yeshwanthpur"],
+  "kengeri campus": ["kengeri campus", "kengeri"],
+  "delhi ncr campus": ["delhi ncr campus", "delhi ncr", "delhi"],
+  "pune lavasa campus": ["pune lavasa campus", "pune lavasa", "lavasa", "pune"],
+};
+
+const getCampusMatchers = (selectedCampus: string): string[] => {
+  const normalizedCampus = normalizeCampusText(selectedCampus);
+  const aliases = CAMPUS_ALIASES[normalizedCampus] || [selectedCampus];
+  return Array.from(
+    new Set(aliases.map((entry) => normalizeCampusText(entry)).filter(Boolean))
+  );
+};
+
+const parseCampusField = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value.filter((entry): entry is string => typeof entry === "string");
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((entry): entry is string => typeof entry === "string");
+      }
+    } catch {
+      return [trimmed];
+    }
+    return [];
+  }
+  return [];
+};
+
+const matchesCampusText = (value: string | null | undefined, matchers: string[]): boolean => {
+  const normalizedValue = normalizeCampusText(value);
+  if (!normalizedValue) return false;
+  return matchers.some(
+    (matcher) =>
+      normalizedValue === matcher ||
+      normalizedValue.includes(matcher) ||
+      matcher.includes(normalizedValue)
+  );
+};
+
+/**
+ * Returns true if the item is visible to a user on the given campus.
+ * Items with no campus restriction (no campus_hosted_at and no allowed_campuses)
+ * are treated as visible to everyone.
+ */
+export const matchesSelectedCampus = (
+  item: CampusScopedItem,
+  selectedCampus: string
+): boolean => {
+  if (!selectedCampus) return true;
+
+  const campusMatchers = getCampusMatchers(selectedCampus);
+  if (campusMatchers.length === 0) return true;
+
+  const allowedCampuses = parseCampusField(item.allowed_campuses);
+  const hasCampusData =
+    Boolean(normalizeCampusText(item.campus_hosted_at)) ||
+    allowedCampuses.length > 0;
+
+  // No explicit campus restriction set — treat as visible to everyone
+  if (!hasCampusData) return true;
+
+  if (matchesCampusText(item.campus_hosted_at, campusMatchers)) {
+    return true;
+  }
+
+  if (allowedCampuses.some((campus) => matchesCampusText(campus, campusMatchers))) {
+    return true;
+  }
+
+  return false;
+};
 
 interface EventCtx {
   allEvents: FetchedEvent[];

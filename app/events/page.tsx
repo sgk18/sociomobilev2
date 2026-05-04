@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useEvents } from "@/context/EventContext";
+import { useState, useMemo, useEffect } from "react";
+import { useEvents, matchesSelectedCampus } from "@/context/EventContext";
+import { useAuth } from "@/context/AuthContext";
 import EventCard from "@/components/EventCard";
 import Skeleton from "@/components/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { SearchIcon, XIcon, CalendarIcon, FilterIcon, SortAZIcon, TrendingUpIcon, ClockIcon } from "@/components/icons";
-import { FilterChip } from "@/components/FilterChip";
+import { SearchIcon, XIcon, CalendarIcon, SortAZIcon, TrendingUpIcon, ClockIcon } from "@/components/icons";
 import { Button } from "@/components/Button";
 import { SectionContainer } from "@/components/SectionContainer";
 import { isDeadlinePassed } from "@/lib/dateUtils";
@@ -22,6 +22,7 @@ const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ReactNode }[] = [
 
 export default function EventsPage() {
   const { allEvents, isLoading } = useEvents();
+  const { userData } = useAuth();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [sort, setSort] = useState<SortKey>("date");
@@ -29,6 +30,18 @@ export default function EventsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const ITEMS_PER_PAGE = 5;
+
+  // Seed the selected campus from the user's profile campus
+  const [selectedCampus, setSelectedCampus] = useState(
+    userData?.campus || "Central Campus (Main)"
+  );
+
+  // Keep campus in sync if userData loads after mount
+  useEffect(() => {
+    if (userData?.campus && selectedCampus === "Central Campus (Main)") {
+      setSelectedCampus(userData.campus);
+    }
+  }, [userData?.campus]);
 
   // Dynamically calculate the trending threshold based on the top 25% of events
   const trendingThreshold = useMemo(() => {
@@ -43,7 +56,20 @@ export default function EventsPage() {
   }, [allEvents]);
 
   const allFilteredEvents = useMemo(() => {
-    let list = allEvents;
+    // 1. Campus filter first — hide events not relevant to the user's campus
+    let list = allEvents.filter((e) =>
+      matchesSelectedCampus(
+        {
+          campus_hosted_at: e.campus_hosted_at,
+          allowed_campuses: e.allowed_campuses,
+          venue: e.venue,
+          allow_outsiders: e.allow_outsiders,
+        },
+        selectedCampus
+      )
+    );
+
+    // 2. Search
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       list = list.filter(
@@ -53,6 +79,7 @@ export default function EventsPage() {
           String(e.fest || "").toLowerCase().includes(q)
       );
     }
+    // 3. Open only
     if (onlyOpen) {
       list = list.filter((e) => !isDeadlinePassed(e.registration_deadline));
     }

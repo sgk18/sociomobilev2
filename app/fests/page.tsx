@@ -12,6 +12,8 @@ import { FilterChip } from "@/components/FilterChip";
 import { PWA_API_URL } from "@/lib/apiConfig";
 import { SectionContainer } from "@/components/SectionContainer";
 import type { Fest } from "@/context/EventContext";
+import { matchesSelectedCampus } from "@/context/EventContext";
+import { useAuth } from "@/context/AuthContext";
 import { useDebounce } from "@/lib/useDebounce";
 import { formatDateRange, isDeadlinePassed } from "@/lib/dateUtils";
 
@@ -25,6 +27,20 @@ export default function FestsPage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const { userData } = useAuth();
+
+  // Seed the selected campus from the user's profile campus
+  const [selectedCampus, setSelectedCampus] = useState(
+    userData?.campus || "Central Campus (Main)"
+  );
+
+  // Keep campus in sync if userData loads after mount
+  useEffect(() => {
+    if (userData?.campus && selectedCampus === "Central Campus (Main)") {
+      setSelectedCampus(userData.campus);
+    }
+  }, [userData?.campus]);
 
   useEffect(() => {
     (async () => {
@@ -54,9 +70,20 @@ export default function FestsPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = fests;
+    // 1. Campus filter — hide fests not relevant to the user's campus
+    let list = fests.filter((f) =>
+      matchesSelectedCampus(
+        {
+          campus_hosted_at: (f as any).campus_hosted_at,
+          allowed_campuses: (f as any).allowed_campuses,
+          venue: f.venue,
+        },
+        selectedCampus
+      )
+    );
+
+    // 2. Text search
     const q = debouncedSearch.trim().toLowerCase();
-    
     if (q) {
       list = list.filter(
         (f) =>
