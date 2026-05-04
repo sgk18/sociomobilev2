@@ -563,7 +563,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (isApp && data?.url) {
-      await Browser.open({ url: data.url });
+      try {
+        await Browser.open({ url: data.url });
+      } catch (browserErr: any) {
+        console.error("Browser.open error", browserErr);
+        throw new Error("Native browser plugin failed. Did you rebuild the app after syncing?");
+      }
     }
   }, []);
 
