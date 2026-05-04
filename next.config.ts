@@ -1,81 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export', // Required for Capacitor
   reactStrictMode: true,
   images: {
+    unoptimized: true, // Required for static export
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "placehold.co" },
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
-    formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 31536000,
-    dangerouslyAllowSVG: true,
   },
-  headers: async () => [
-    {
-      source: "/sw.js",
-      headers: [
-        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
-        { key: "Service-Worker-Allowed", value: "/" },
-      ],
-    },
-    {
-      source: "/manifest.json",
-      headers: [
-        { key: "Content-Type", value: "application/manifest+json" },
-      ],
-    },
-    /* ── Immutable Next.js build assets ── */
-    {
-      source: "/_next/static/:path*",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=31536000, immutable",
-        },
-      ],
-    },
-    /* ── Static public assets (images, icons, fonts) ── */
-    {
-      source: "/images/:path*",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=2592000, stale-while-revalidate=86400",
-        },
-      ],
-    },
-    {
-      source: "/:path*.png",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=2592000, stale-while-revalidate=86400",
-        },
-      ],
-    },
-    {
-      source: "/:path*.svg",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=2592000, stale-while-revalidate=86400",
-        },
-      ],
-    },
-    /* ── Google Fonts are already CDN-cached, but the CSS import needs a hint ── */
-    {
-      source: "/:path*.woff2",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=31536000, immutable",
-        },
-      ],
-    },
-  ],
+  // Note: 'headers' are ignored during static export as they are handled by the web server (Capacitor handles this via capacitor.config.ts)
 };
 
 export default nextConfig;

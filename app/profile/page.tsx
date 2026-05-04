@@ -6,14 +6,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
-import { useNotifications } from "@/context/NotificationContext";
 import Skeleton from "@/components/Skeleton";
 import LoadingScreen from "@/components/LoadingScreen";
-import CampusSelector from "@/components/CampusSelector";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import {
-  LogOutIcon as LogOut,
-  MailIcon as Mail,
   HashIcon as Hash,
   GraduationCapIcon as GraduationCap,
   BuildingIcon as Building,
@@ -29,6 +25,7 @@ import {
   XCircleIcon as XCircle,
   SearchIcon,
   XIcon,
+  SettingsIcon,
 } from "@/components/icons";
 import { Button } from "@/components/Button";
 import type { FetchedEvent } from "@/context/EventContext";
@@ -53,7 +50,6 @@ export default function ProfilePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
-  const [showCampusSelector, setShowCampusSelector] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [isSubmittingName, setIsSubmittingName] = useState(false);
@@ -62,28 +58,6 @@ export default function ProfilePage() {
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { requestPushPermissions } = useNotifications();
-  
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    events: true,
-    clubs: true,
-    announcements: true,
-  });
-
-  const togglePref = async (key: keyof typeof notificationPrefs) => {
-    const newVal = !notificationPrefs[key];
-    setNotificationPrefs(prev => ({ ...prev, [key]: newVal }));
-    
-    // Sync with OneSignal segment tags
-    try {
-      const OS = (await import("onesignal-cordova-plugin")).default;
-      if (OS && OS.User) {
-        OS.User.addTag(`opt_out_${key}`, newVal ? "false" : "true");
-      }
-    } catch (e) {
-      // Ignore if not native
-    }
-  };
 
   const formatDate = (rawDate?: string) => {
     if (!rawDate) return "Date TBA";
@@ -364,6 +338,15 @@ export default function ProfilePage() {
 
       {/* Quick links */}
       <div className="px-4 -mt-5 relative z-10 grid grid-cols-1 gap-3 mb-4">
+        <Link href="/profile/settings" className="flex-1 card p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center">
+            <SettingsIcon size={17} className="text-[var(--color-text-muted)]" />
+          </div>
+          <div className="text-left flex-1 min-w-0">
+            <p className="text-[13px] font-bold">Settings</p>
+          </div>
+          <ChevronRight size={15} className="text-[var(--color-text-light)]" />
+        </Link>
         <button
           onClick={() => router.push("/notifications")}
           className="flex-1 card p-3 flex items-center gap-3"
@@ -392,20 +375,6 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Detect Campus button for Christ members without campus */}
-      {userData.organization_type === "christ_member" && !userData.campus && (
-        <div className="px-4 mb-4">
-          <Button
-            onClick={() => setShowCampusSelector(true)}
-            variant="primary"
-            fullWidth
-            leftIcon={<MapPin size={16} />}
-          >
-            Detect Your Campus
-          </Button>
-        </div>
-      )}
-
       {/* Info Card */}
       <div className="px-4 mb-4">
         <div className="card divide-y divide-[var(--color-border)]">
@@ -418,42 +387,6 @@ export default function ProfilePage() {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Notification Preferences */}
-      <div className="px-4 mb-4">
-        <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15px] font-extrabold flex items-center gap-2">
-              <Bell size={15} className="text-[var(--color-primary)]" />
-              Push Notifications
-            </h2>
-            <Button variant="outline" size="sm" onClick={requestPushPermissions} className="text-[11px] h-7 px-2 border-[var(--color-primary)] text-[var(--color-primary)]">
-              Enable Push
-            </Button>
-          </div>
-          
-          <div className="space-y-3 mt-4">
-            {[
-              { key: "events" as const, label: "Event Reminders", desc: "Get notified before registered events start" },
-              { key: "clubs" as const, label: "Club Updates", desc: "News from clubs you follow" },
-              { key: "announcements" as const, label: "Announcements", desc: "Important campus broadcasts" },
-            ].map(({ key, label, desc }) => (
-              <div key={key} className="flex items-center justify-between">
-                <div>
-                  <p className="text-[13px] font-semibold text-[var(--color-text)]">{label}</p>
-                  <p className="text-[11px] text-[var(--color-text-muted)]">{desc}</p>
-                </div>
-                <button
-                  onClick={() => togglePref(key)}
-                  className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${notificationPrefs[key] ? 'bg-[var(--color-primary)]' : 'bg-gray-300'}`}
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${notificationPrefs[key] ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -655,33 +588,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Sign out */}
-      <div className="px-4 mb-8">
-        <Button
-          variant="danger"
-          fullWidth
-          onClick={async () => {
-            await signOut();
-            router.replace("/auth");
-          }}
-          leftIcon={<LogOut size={16} />}
-        >
-          Sign out
-        </Button>
-      </div>
-
-      {/* Campus Selector modal */}
-      {showCampusSelector && userData?.email && session?.access_token && (
-        <CampusSelector
-          email={userData.email}
-          accessToken={session.access_token}
-          onComplete={async () => {
-            setShowCampusSelector(false);
-            await refreshUserData();
-          }}
-          onDismiss={() => setShowCampusSelector(false)}
-        />
-      )}
+      {/* End of main profile content */}
 
       {isEditingName && (
         <div className="modal-backdrop">

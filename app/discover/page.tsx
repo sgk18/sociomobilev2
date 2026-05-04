@@ -230,14 +230,10 @@ export default function DiscoverPage() {
 
   return (
     <div className="pwa-page pt-[calc(var(--nav-height)+var(--safe-top))] pb-8 bg-[#f9fafb] max-w-[420px] mx-auto">
-      {/* Search & Header Row */}
-      <div className="px-5 h-[42px] flex flex-col justify-center">
-        {!isSearchOpen ? (
-          <div className="flex items-center justify-between animate-fade-in">
-            <h1 className="text-[26px] font-black tracking-tight text-[var(--color-text)]">Discover</h1>
-          </div>
-        ) : (
-          <div className="flex-1 flex items-center gap-2 animate-fade-in">
+      {/* Search Bar Row — Only visible when searching */}
+      {isSearchOpen && (
+        <div className="px-5 h-[48px] flex flex-col justify-center animate-fade-in">
+          <div className="flex-1 flex items-center gap-2">
             <div className="relative flex-1 min-w-0">
               <SearchIcon
                 size={16}
@@ -252,7 +248,7 @@ export default function DiscoverPage() {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full h-[36px] pl-9 pr-8 text-[13px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all placeholder:text-[var(--color-text-muted)] font-medium"
+                className="w-full h-[38px] pl-9 pr-8 text-[13px] bg-[#e8e9ec] border-none rounded-xl outline-none transition-all placeholder:text-[var(--color-text-muted)] font-medium"
               />
               {search && (
                 <button
@@ -277,11 +273,11 @@ export default function DiscoverPage() {
               Cancel
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Filter chips row */}
-      <div className="flex overflow-x-auto mb-3 gap-2.5 items-center no-scrollbar snap-x snap-mandatory h-[48px]">
+      <div className="flex overflow-x-auto mb-1 gap-2.5 items-center no-scrollbar snap-x snap-mandatory h-[48px]">
         <div className="shrink-0 w-4 snap-start" aria-hidden />
         {!isSearchOpen && (
           <button
