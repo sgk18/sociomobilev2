@@ -23,6 +23,7 @@ import {
   ClockIcon as Clock3,
   CheckCircleIcon as CheckCircle2,
   XCircleIcon as XCircle,
+  MailIcon as Mail,
   SearchIcon,
   XIcon,
   SettingsIcon,

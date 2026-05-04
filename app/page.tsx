@@ -29,7 +29,7 @@ function getEventImage(event: FetchedEvent) {
 }
 
 function getQuickActions(notificationCount: number, volunteerCount: number) {
-  const actions = [
+  const actions: { href: string; label: string; icon: any; tone: string; badge?: number }[] = [
     {
       href: "/discover",
       label: "Discover",
