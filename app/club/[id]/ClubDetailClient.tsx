@@ -375,7 +375,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
               </div>
               <div>
                 <label htmlFor="role-select" className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-muted)] mb-1 block">Role</label>
-                <select id="role-select" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} required className="input text-[13px] font-medium">
+                <select id="role-select" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} required className="input select text-[13px] font-medium">
                   <option value="">Select a role</option>
                   {availableRoles.map((role) => <option key={role} value={role}>{role}</option>)}
                 </select>

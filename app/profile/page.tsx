@@ -361,7 +361,7 @@ export default function ProfilePage() {
           </div>
           <ChevronRight size={15} className="text-[var(--color-text-light)]" />
         </button>
-        {activeVolunteerEvents.length > 0 && (
+        {((userData?.volunteerEvents?.length ?? 0) > 0 || userData?.is_organiser || userData?.is_masteradmin || userData?.is_support) && (
           <Link href="/volunteer" className="flex-1 card p-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
               <QrCode size={17} className="text-[var(--color-primary)]" />
@@ -369,7 +369,9 @@ export default function ProfilePage() {
             <div className="text-left flex-1 min-w-0">
               <p className="text-[13px] font-bold">Volunteer Dashboard</p>
               <p className="text-[11px] text-[var(--color-text-muted)]">
-                {activeVolunteerEvents.length} active assignment{activeVolunteerEvents.length === 1 ? "" : "s"}
+                {activeVolunteerEvents.length > 0 
+                  ? `${activeVolunteerEvents.length} active assignment${activeVolunteerEvents.length === 1 ? "" : "s"}`
+                  : "View assignments & scanner"}
               </p>
             </div>
             <ChevronRight size={15} className="text-[var(--color-text-light)]" />
