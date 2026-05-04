@@ -21,3 +21,6 @@ npm-debug.log*
 next-env.d.ts
 *.txt
 *.log
+
+# devcontext
+.devcontext/
