@@ -231,8 +231,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : [];
         fetchedUser.roles = fetchedUser.roles ?? data.roles ?? {};
         
-        // Derive catering role from caters array
-        if (fetchedUser.caters && fetchedUser.caters.length > 0) {
+        // Derive catering role from caters array - must have at least one entry with is_catering: true
+        if (fetchedUser.caters && fetchedUser.caters.some((c: any) => c.is_catering)) {
           fetchedUser.roles.catering = true;
         }
         
@@ -277,8 +277,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               : [];
           fetchedUser.roles = fetchedUser.roles ?? data.roles ?? {};
 
-          // Derive catering role from caters array
-          if (fetchedUser.caters && fetchedUser.caters.length > 0) {
+          // Derive catering role from caters array - must have at least one entry with is_catering: true
+          if (fetchedUser.caters && fetchedUser.caters.some((c: any) => c.is_catering)) {
             fetchedUser.roles.catering = true;
           }
           

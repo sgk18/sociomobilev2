@@ -28,6 +28,7 @@ import {
   XIcon,
   SettingsIcon,
   ChefHatIcon as ChefHat,
+  UtensilsIcon as Utensils,
 } from "@/components/icons";
 import { Button } from "@/components/Button";
 import type { FetchedEvent } from "@/context/EventContext";
@@ -381,10 +382,10 @@ export default function ProfilePage() {
         {(userData?.is_masteradmin || userData?.roles?.catering) && (
           <Link href="/catering" className="flex-1 card p-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center">
-              <ChefHat size={17} className="text-orange-600" />
+              <Utensils size={17} className="text-orange-600" />
             </div>
             <div className="text-left flex-1 min-w-0">
-              <p className="text-[13px] font-bold">Catering Dashboard</p>
+              <p className="text-[13px] font-bold">Catering</p>
               <p className="text-[11px] text-[var(--color-text-muted)]">Manage food orders & bookings</p>
             </div>
             <ChevronRight size={15} className="text-[var(--color-text-light)]" />

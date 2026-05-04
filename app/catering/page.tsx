@@ -144,117 +144,144 @@ export default function CateringDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] pb-24">
-      {/* Header */}
-      <div className="bg-white px-4 pt-4 pb-4 border-b border-[var(--color-border)] sticky top-0 z-20">
-        <div className="flex items-center gap-3 mb-4">
+    <div className="min-h-screen bg-[#F8FAFC] pb-24">
+      {/* Sticky Header */}
+      <div className="bg-white px-4 pt-5 pb-4 border-b border-[var(--color-border)] sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-[var(--color-text)]"
+            className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-[var(--color-text)] active:scale-90 transition-transform"
           >
             <ArrowLeftIcon size={18} />
           </button>
-          <h1 className="text-xl font-extrabold flex-1">Catering Orders</h1>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-600 to-orange-400 rounded-2xl p-5 text-white shadow-lg shadow-orange-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
-              <ChefHat size={20} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold">Catering Dashboard</h2>
-              <p className="text-white/80 text-[11px] font-medium uppercase tracking-wider">
-                Vendor Management System
+          <div>
+            <h1 className="text-xl font-extrabold text-[#0F172A] leading-tight">Catering Orders</h1>
+            {bookings.length > 0 && !error && (
+              <p className="text-[12px] text-[var(--color-text-muted)] font-medium">
+                Incoming orders for your catering service.
               </p>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 max-w-2xl mx-auto">
         {error ? (
-          <div className="card p-8 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-3">
-              <AlertTriangleIcon className="text-red-500" size={24} />
+          <div className="card p-8 text-center flex flex-col items-center mt-10">
+            <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mb-4">
+              <AlertTriangleIcon className="text-red-500" size={28} />
             </div>
-            <p className="text-[13px] font-bold text-red-600 mb-1">Update Failed</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mb-4">{error}</p>
-            <Button size="sm" variant="outline" onClick={() => fetchBookings(page)}>
+            <p className="text-[14px] font-bold text-red-600 mb-1">Failed to Load Orders</p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mb-6">{error}</p>
+            <Button size="md" variant="primary" onClick={() => fetchBookings(page)}>
               Retry
             </Button>
           </div>
         ) : bookings.length === 0 ? (
-          <div className="card p-12 text-center flex flex-col items-center">
-            <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">
-              <ChefHat className="text-orange-400" size={32} />
+          <div className="card p-12 text-center flex flex-col items-center mt-10 shadow-sm">
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+              <ChefHat className="text-[var(--color-primary)]" size={32} />
             </div>
-            <h3 className="font-bold text-[15px] mb-1">No Orders Found</h3>
+            <h3 className="font-bold text-[16px] text-[#0F172A] mb-1">No Orders Found</h3>
             <p className="text-[12px] text-[var(--color-text-muted)]">
               When users book your catering services, they will appear here.
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6 mt-2">
+            {/* Group Header - Following Web UI */}
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-[14px] font-bold text-[#475569]">
+                Pending <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-[11px] ml-1">
+                  {bookings.filter(b => b.status === "pending").length}
+                </span>
+              </h3>
+            </div>
+
             {bookings.map((booking) => (
-              <div key={booking.booking_id} className="card overflow-hidden border-l-4 border-orange-500">
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 min-w-0 mr-2">
-                      <h3 className="font-extrabold text-[15px] text-[var(--color-text)] truncate leading-tight">
-                        {booking.event_title || booking.fest_title || "General Booking"}
+              <div key={booking.booking_id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:border-blue-200 transition-colors">
+                <div className="p-5">
+                  {/* Card Header */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-[16px] text-[#0F172A] leading-snug">
+                        {booking.event_title || booking.fest_title || "Catering Request"}
                       </h3>
-                      <p className="text-[11px] text-[var(--color-text-muted)] font-medium">
-                        ID: {booking.booking_id}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-slate-500 font-medium">
+                        <span className="flex items-center gap-1">
+                          <CalendarDays size={12} className="text-slate-400" />
+                          {booking.event_date || booking.fest_opening_date 
+                            ? formatDateShort(booking.event_date || booking.fest_opening_date!) 
+                            : "No Date"}
+                        </span>
+                        <span>•</span>
+                        <span>ID: {booking.booking_id.slice(-8).toUpperCase()}</span>
+                      </div>
                     </div>
-                    <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    
+                    <div className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
                       booking.status === "pending" ? "bg-blue-50 text-blue-600" :
-                      booking.status === "accepted" ? "bg-green-50 text-green-600" :
-                      "bg-red-50 text-red-600"
+                      booking.status === "accepted" ? "bg-emerald-50 text-emerald-600" :
+                      "bg-rose-50 text-rose-600"
                     }`}>
                       {booking.status}
                     </div>
                   </div>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-[12px] text-[var(--color-text)]">
-                      <CalendarDays size={14} className="text-orange-500" />
-                      <span>
-                        {booking.event_date || booking.fest_opening_date 
-                          ? formatDateShort(booking.event_date || booking.fest_opening_date!) 
-                          : "Date TBD"}
-                      </span>
+                  {/* Section: Order Details */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Order Details</p>
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                      <p className="text-[13px] text-slate-700 leading-relaxed">
+                        {booking.description || "No specific instructions provided."}
+                      </p>
                     </div>
-                    {booking.catering_name && (
-                      <div className="flex items-center gap-2 text-[12px] text-[var(--color-text)]">
-                        <ChefHat size={14} className="text-orange-500" />
-                        <span className="font-semibold">{booking.catering_name}</span>
-                      </div>
-                    )}
-                    {booking.description && (
-                      <div className="mt-2 p-2 bg-gray-50 rounded-lg text-[12px] text-[var(--color-text-muted)] italic">
-                        "{booking.description}"
-                      </div>
-                    )}
                   </div>
 
+                  {/* Section: Requester Info */}
+                  <div className="mb-5">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Requester Contact</p>
+                    <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-[9px] font-bold text-blue-400 uppercase">Name</p>
+                        <p className="text-[12px] font-bold text-[#0F172A] truncate">
+                          {booking.contact_details?.name || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-bold text-blue-400 uppercase">Email</p>
+                        <p className="text-[12px] font-medium text-blue-600 truncate underline underline-offset-2">
+                          {booking.contact_details?.email || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
                   {booking.status === "pending" && (
-                    <div className="flex gap-2 pt-2 border-t border-gray-100 mt-2">
-                      <button
-                        onClick={() => handleAction(booking.booking_id, "accept")}
-                        className="flex-1 py-2 bg-green-500 text-white rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform"
-                      >
-                        <CheckCircle size={14} />
-                        Accept
-                      </button>
+                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
                       <button
                         onClick={() => handleAction(booking.booking_id, "decline")}
-                        className="flex-1 py-2 bg-white border border-red-200 text-red-600 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                        className="py-3 px-4 border border-rose-200 text-rose-600 rounded-xl text-[13px] font-bold active:bg-rose-50 transition-colors"
                       >
-                        <XCircle size={14} />
                         Decline
                       </button>
+                      <button
+                        onClick={() => handleAction(booking.booking_id, "accept")}
+                        className="py-3 px-4 bg-emerald-600 text-white rounded-xl text-[13px] font-bold shadow-sm active:scale-[0.98] transition-all"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  )}
+                  
+                  {booking.status !== "pending" && (
+                    <div className="flex items-center justify-center gap-2 py-2 text-slate-400 text-[12px] font-medium italic bg-slate-50 rounded-lg">
+                      {booking.status === "accepted" ? (
+                        <><CheckCircle size={14} className="text-emerald-500" /> Order accepted</>
+                      ) : (
+                        <><XCircle size={14} className="text-rose-500" /> Order declined</>
+                      )}
                     </div>
                   )}
                 </div>
@@ -263,38 +290,44 @@ export default function CateringDashboardPage() {
 
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-8 px-2">
+              <div className="flex items-center justify-between mt-10 px-2 pb-6">
                 <button
                   disabled={page === 1}
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    page === 1 ? "bg-gray-100 text-gray-400" : "bg-white text-orange-600 border border-orange-100 shadow-sm active:bg-orange-50"
+                  onClick={() => {
+                    setPage(p => Math.max(1, p - 1));
+                    window.scrollTo(0, 0);
+                  }}
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                    page === 1 
+                      ? "bg-slate-100 text-slate-300" 
+                      : "bg-white text-blue-600 border border-slate-200 shadow-sm active:scale-90"
                   }`}
                 >
                   <ChevronLeftIcon size={20} />
                 </button>
                 
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-bold text-[var(--color-text)]">
-                    Page {page} of {pagination.totalPages}
+                <div className="bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-sm">
+                  <span className="text-[13px] font-extrabold text-[#0F172A]">
+                    {page} / {pagination.totalPages}
                   </span>
                 </div>
 
                 <button
                   disabled={page === pagination.totalPages}
-                  onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    page === pagination.totalPages ? "bg-gray-100 text-gray-400" : "bg-white text-orange-600 border border-orange-100 shadow-sm active:bg-orange-50"
+                  onClick={() => {
+                    setPage(p => Math.min(pagination.totalPages, p + 1));
+                    window.scrollTo(0, 0);
+                  }}
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                    page === pagination.totalPages 
+                      ? "bg-slate-100 text-slate-300" 
+                      : "bg-white text-blue-600 border border-slate-200 shadow-sm active:scale-90"
                   }`}
                 >
                   <ChevronRight size={20} />
                 </button>
               </div>
             )}
-            
-            <p className="text-center text-[10px] text-[var(--color-text-muted)] mt-4">
-              Showing {bookings.length} of {pagination?.totalItems || bookings.length} orders
-            </p>
           </div>
         )}
       </div>
