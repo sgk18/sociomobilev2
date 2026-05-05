@@ -174,11 +174,10 @@ export default function EventDetailClient({ eventId }: { eventId: string }) {
   };
 
   return (
-    <div className="min-h-screen pb-[calc(var(--bottom-nav)+var(--safe-bottom)+100px)]"
-      style={{ background: "linear-gradient(180deg, #000D3B 0%, #011F7B 36%, #E8EFFF 400px, #F5F7FA 100%)" }}>
+    <div className="min-h-screen bg-[#F5F7FA] pb-[calc(var(--bottom-nav)+var(--safe-bottom)+100px)]">
 
       {/* ── Full-bleed hero ── */}
-      <div className="relative w-full" style={{ aspectRatio: "4/3", maxHeight: 320 }}>
+      <div className="relative w-full overflow-hidden" style={{ minHeight: "56vw", maxHeight: 360 }}>
         <Image
           src={event.banner_url || event.event_image_url || "https://placehold.co/800x600/011F7B/ffffff?text=Event"}
           alt={event.title} fill className="object-cover" priority sizes="100vw"
@@ -253,12 +252,12 @@ export default function EventDetailClient({ eventId }: { eventId: string }) {
       <div className="px-4 mb-4">
         <div className="flex flex-wrap gap-1.5">
           {event.participants_per_team > 1 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-600/10 text-blue-700 text-[11px] font-semibold border border-blue-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-100">
               <Users size={11} /> Team of {event.participants_per_team}
             </span>
           )}
           {event.category && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 text-[var(--color-text-muted)] text-[11px] font-semibold border border-white/60 shadow-sm">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-[var(--color-text-muted)] text-[11px] font-semibold border border-gray-200">
               <Tag size={11} /> {event.category}
             </span>
           )}
@@ -402,38 +401,33 @@ export default function EventDetailClient({ eventId }: { eventId: string }) {
       </div>
 
       {/* ── Sticky CTA ── */}
-      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+12px)] left-1/2 -translate-x-1/2 w-[min(92vw,420px)] z-40">
-        <div className="bg-white/96 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_rgba(1,31,123,0.22)] rounded-[22px] px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="shrink-0">
-              <p className={`text-[20px] font-black leading-none ${isFree ? "text-emerald-600" : isRegistered ? "text-emerald-600" : "text-[var(--color-primary)]"}`}>
-                {isFree ? "Free" : `₹${event.registration_fee}`}
-              </p>
-              {event.participants_per_team > 1 && (
-                <p className="text-[10px] text-[var(--color-text-muted)] font-medium mt-0.5">per team</p>
-              )}
-            </div>
-            <Button
-              onClick={handleRegister}
-              disabled={isRegistered || isClosed || isRegistering || authLoading}
-              variant={isRegistered || isClosed ? "ghost" : "primary"}
-              fullWidth
-              className={`flex-1 h-12 rounded-[14px] text-[14px] font-extrabold ${
-                isRegistered ? "!bg-emerald-100 !text-emerald-700 !border-emerald-200" :
-                isClosed ? "!bg-gray-100 !text-gray-400 !border-gray-200" :
-                isFree ? "!bg-[var(--color-accent)] !text-[var(--color-primary-dark)] !border-transparent !shadow-[0_4px_16px_rgba(255,186,9,0.45)]" : ""
-              }`}
-              leftIcon={
-                isRegistering ? <Loader2 size={18} className="animate-spin" /> :
-                isRegistered ? <CheckCircle2 size={17} /> : undefined
-              }
-            >
-              {isRegistering ? "Registering…" :
-               isRegistered ? "Registered" :
-               isClosed ? "Closed" :
-               event.participants_per_team > 1 ? "Register Team" : "Register Now"}
-            </Button>
-          </div>
+      <div className="fixed bottom-[calc(var(--bottom-nav)+var(--safe-bottom)+10px)] left-1/2 -translate-x-1/2 w-[min(92vw,420px)] z-40">
+        <div className="bg-white shadow-[0_-2px_0_rgba(0,0,0,0.04),0_8px_32px_rgba(1,31,123,0.18)] rounded-[20px] p-3">
+          <Button
+            onClick={handleRegister}
+            disabled={isRegistered || isClosed || isRegistering || authLoading}
+            variant={isRegistered || isClosed ? "ghost" : "primary"}
+            fullWidth
+            className={`h-13 rounded-[14px] text-[15px] font-extrabold ${
+              isRegistered ? "!bg-emerald-100 !text-emerald-700 !border-emerald-200" :
+              isClosed    ? "!bg-gray-100 !text-gray-400 !border-gray-200" :
+              isFree      ? "!bg-[var(--color-accent)] !text-[var(--color-primary-dark)] !border-transparent !shadow-[0_4px_16px_rgba(255,186,9,0.45)]" : ""
+            }`}
+            leftIcon={
+              isRegistering ? <Loader2 size={18} className="animate-spin" /> :
+              isRegistered  ? <CheckCircle2 size={18} /> : undefined
+            }
+          >
+            {isRegistering ? "Registering…" :
+             isRegistered  ? "Registered" :
+             isClosed      ? "Registration Closed" :
+             isFree
+               ? (event.participants_per_team > 1 ? "Register Team — Free" : "Register Now — Free")
+               : (event.participants_per_team > 1 ? `Register Team — ₹${event.registration_fee}` : `Register Now — ₹${event.registration_fee}`)}
+          </Button>
+          {event.participants_per_team > 1 && !isRegistered && !isClosed && (
+            <p className="text-center text-[11px] text-[var(--color-text-muted)] mt-1.5">Price is per team</p>
+          )}
         </div>
       </div>
     </div>
